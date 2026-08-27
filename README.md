@@ -4,7 +4,6 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/zy84338719/go-cnb.cool.svg)](https://pkg.go.dev/github.com/zy84338719/go-cnb.cool)
 [![Release](https://img.shields.io/github/v/release/zy84338719/go-cnb.cool?color=blue)](https://github.com/zy84338719/go-cnb.cool/releases)
 [![Go Version](https://img.shields.io/badge/go-1.22%2B-00ADD8?logo=go&logoColor=white)](go.mod)
-[![Go Report Card](https://goreportcard.com/badge/github.com/zy84338719/go-cnb.cool)](https://goreportcard.com/report/github.com/zy84338719/go-cnb.cool)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 类型安全、**全量覆盖**的 [CNB](https://cnb.cool)(云原生构建 / Cloud Native Build)OpenAPI Go 客户端。
