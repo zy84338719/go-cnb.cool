@@ -79,7 +79,7 @@ func serviceMethods(t *testing.T, c *Client) map[string]reflect.Value {
 	v := reflect.ValueOf(c).Elem()
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)
-		if f.Kind() != reflect.Ptr || f.IsNil() {
+		if f.Kind() != reflect.Pointer || f.IsNil() {
 			continue
 		}
 		if !strings.HasSuffix(f.Type().Elem().Name(), "Service") {
@@ -106,7 +106,7 @@ func TestRouteTableFullCoverage(t *testing.T) {
 
 	var (
 		mu       sync.Mutex
-		gotReq   chan struct{} = make(chan struct{}, 1) // 串行化用
+		gotReq   = make(chan struct{}, 1) // 串行化用
 		lastM    string
 		lastPath string
 	)
@@ -214,7 +214,7 @@ func buildCallArgs(t *testing.T, m reflect.Value, op specOpWithPath) ([]reflect.
 		}
 	}
 	if hasQuery {
-		if mt.In(argIdx).Kind() != reflect.Ptr {
+		if mt.In(argIdx).Kind() != reflect.Pointer {
 			t.Fatalf("%s: 第 %d 个参数应为 *Options", op.OperationID, argIdx)
 		}
 		args = append(args, reflect.Zero(mt.In(argIdx)))
@@ -223,7 +223,7 @@ func buildCallArgs(t *testing.T, m reflect.Value, op specOpWithPath) ([]reflect.
 	if hasBody {
 		bt := mt.In(argIdx)
 		var bv reflect.Value
-		if bt.Kind() == reflect.Ptr {
+		if bt.Kind() == reflect.Pointer {
 			bv = reflect.Zero(bt)
 		} else {
 			bv = reflect.New(bt).Elem() // 零值表单

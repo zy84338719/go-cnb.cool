@@ -207,3 +207,55 @@ func TestEnumRoundtrip(t *testing.T) {
 		t.Error("RepoStatus int enum values wrong")
 	}
 }
+
+// escapePath: repo slug 与深层路径组合、特殊字符.
+func TestEscapePathDeep(t *testing.T) {
+	got := escapePath("/%s/-/git/contents/%s", "org/sub team", "docs/read me.md?a=1")
+	if got != "/org/sub%20team/-/git/contents/docs/read%20me.md%3Fa=1" {
+		t.Errorf("got %q", got)
+	}
+	// 中文
+	got = escapePath("/%s/-/git/branches/%s", "org/repo", "feature/中文")
+	if got != "/org/repo/-/git/branches/feature/%E4%B8%AD%E6%96%87" {
+		t.Errorf("got %q", got)
+	}
+}
+
+// addQuery: 数组逗号连接、bool、浮点精度.
+func TestAddQueryComplex(t *testing.T) {
+	got, err := addQuery("/x", &ListPullsOptions{
+		ListOptions: ListOptions{Page: 1},
+		State:       Ptr("all"),
+	})
+	if err != nil || got != "/x?page=1&state=all" {
+		t.Errorf("got %q err %v", got, err)
+	}
+}
+
+// WithBaseURL 无尾斜杠自动补齐.
+func TestWithBaseURLNoTrailingSlash(t *testing.T) {
+	c, err := NewClient("t", WithBaseURL("https://example.com/api"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := c.BaseURL.String(); got != "https://example.com/api/" {
+		t.Errorf("BaseURL = %q", got)
+	}
+	// 相对路径解析
+	req, err := c.NewRequest(http.MethodGet, "/user", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if req.URL.String() != "https://example.com/api/user" {
+		t.Errorf("resolved = %q", req.URL.String())
+	}
+}
+
+// Response.BodyBytes: 空 body 与无响应体场景.
+func TestBodyBytesEmpty(t *testing.T) {
+	r := &Response{}
+	b, err := r.BodyBytes()
+	if err != nil || len(b) != 0 {
+		t.Errorf("empty: %q %v", b, err)
+	}
+}

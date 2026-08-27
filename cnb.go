@@ -1,14 +1,5 @@
-// Package cnb 是 CNB (cnb.cool, 云原生构建/代码托管平台) OpenAPI 的 Go SDK.
-//
-// 全量覆盖 https://api.cnb.cool 公开接口 (259 个操作, 31 个服务分组),
-// 纯标准库实现, 无第三方依赖.
-//
-// 快速上手:
-//
-//	client := cnb.NewClient("your-access-token")
-//	groups, resp, err := client.Organizations.ListTopGroups(ctx, nil)
-//
-// API 文档: https://docs.cnb.cool/zh/develops/openapi.html
+// Client 核心逻辑 (NewClient / NewRequest / Do).
+// 包文档见 doc.go.
 package cnb
 
 import (
@@ -163,11 +154,17 @@ func (c *Client) resolveURL(urlStr string) (*url.URL, error) {
 	if rel.IsAbs() {
 		return rel, nil
 	}
-	if c.BaseURL == nil {
-		base, _ := url.Parse(DefaultBaseURL)
-		return base.ResolveReference(rel), nil
+	base := c.BaseURL
+	if base == nil {
+		base, _ = url.Parse(DefaultBaseURL)
 	}
-	return c.BaseURL.ResolveReference(rel), nil
+	u := *base.ResolveReference(rel)
+	// net/url 语义: 以 "/" 开头的相对路径会丢弃 base 的 path 前缀;
+	// 对带路径前缀的网关 (如 https://host/api/) 需要手动补回.
+	if strings.HasPrefix(rel.Path, "/") && base.Path != "" && base.Path != "/" {
+		u.Path = strings.TrimSuffix(base.Path, "/") + rel.Path
+	}
+	return &u, nil
 }
 
 // Do 执行请求.
@@ -185,7 +182,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 	if err != nil {
 		return nil, err
 	}
-	defer httpResp.Body.Close()
+	defer func() { _ = httpResp.Body.Close() }()
 
 	resp := &Response{Response: httpResp}
 	body, err := io.ReadAll(httpResp.Body)

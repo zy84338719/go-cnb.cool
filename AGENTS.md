@@ -30,7 +30,9 @@ go run ./examples/basic            # 需要 CNB_TOKEN 环境变量
 ## CI
 
 `.github/workflows/ci.yml`：push/PR 触发
+- **lint**：golangci-lint (默认集: errcheck/govet/staticcheck/ineffassign/unused)
 - **test**：Go 1.22.x / stable 矩阵跑 gofmt 检查 + build + vet + test
 - **generator-check**：重跑生成器并 `git diff --exit-code` 校验 `*_gen.go` 与 spec 同步
 
+本地改完跑：`golangci-lint run ./... && go test -race ./...`
 改生成器或 spec 后必须重新生成并一并提交，否则 generator-check 会红。
