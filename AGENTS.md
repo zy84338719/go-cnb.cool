@@ -16,7 +16,7 @@ CNB (cnb.cool) OpenAPI 的 Go SDK。纯标准库，零依赖。Go 1.22+。
 - 模块路径 `github.com/zy84338719/go-cnb.cool`（GitHub: https://github.com/zy84338719/go-cnb.cool ），包名 `cnb`，导入需别名
 - 请求体/查询参数字段：指针 + omitempty；响应模型：值字段（请求可达的 dto 例外，为指针风格）
 - Issue/PR 的 `number` 是 **string**（API 如此定义）
-- 无 schema 的下载接口返回 `*Response`，body 已缓冲可重复读
+- 无 schema 的下载接口返回 `*Response`，body 已缓冲: `resp.Body` 读一次, `resp.BodyBytes()` 多次取
 - 更新 API 覆盖：重新下载 swagger.json → 放入 internal/gen/ → 跑生成器 → `go build ./... && go test ./...`
 
 ## 命令

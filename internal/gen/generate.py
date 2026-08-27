@@ -209,8 +209,12 @@ for n in sorted(DEFS):
 # ---------------------------------------------------------------------------
 
 def resolve_all_of(schema: dict) -> dict:
+    # 单一 $ref (外加 description): 直接采用引用类型, 保住枚举等具名类型
+    subs = schema.get("allOf", [])
+    if len(subs) == 1 and "$ref" in subs[0]:
+        return {"$ref": subs[0]["$ref"]}
     merged = {}
-    for sub in schema.get("allOf", []):
+    for sub in subs:
         if "$ref" in sub:
             sub = DEFS.get(ref_name(sub), {})
         for k, v in sub.items():

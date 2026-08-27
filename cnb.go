@@ -97,12 +97,25 @@ func WithBaseURL(raw string) ClientOption {
 // Response 包装 HTTP 响应.
 //
 // 对于没有 JSON schema 的接口 (文件/归档/图片/日志下载等, 生成的方法只返回
-// *Response), Do 已把响应体完整读入内存, 调用方可直接读 resp.Body:
+// *Response), Do 已把响应体完整读入内存:
 //
-//	resp, err := client.Git.GetArchive(ctx, "org/repo", "main", "")
-//	data, err := io.ReadAll(resp.Body)
+//	resp, err := client.Git.GetArchive(ctx, "org/repo", "main")
+//	data, _ := io.ReadAll(resp.Body)      // 顺序读一次
+//	data2, _ := resp.BodyBytes()          // 随时再取缓冲副本
 type Response struct {
 	*http.Response
+
+	raw []byte // 已缓冲的响应体
+}
+
+// BodyBytes 返回已缓冲的响应体副本, 可多次调用.
+func (r *Response) BodyBytes() ([]byte, error) {
+	if r.raw == nil {
+		return nil, nil
+	}
+	out := make([]byte, len(r.raw))
+	copy(out, r.raw)
+	return out, nil
 }
 
 // NewRequest 构造请求. urlStr 为相对路径 (如 /user/groups) 时基于 BaseURL 解析;
@@ -179,7 +192,8 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 	if err != nil {
 		return resp, fmt.Errorf("cnb: read response body: %w", err)
 	}
-	// 无论成功失败, 都把已读入的 body 挂回去供调用方使用.
+	resp.raw = body
+	// 把已读入的 body 挂回 Body, 调用方仍可按流读一次.
 	httpResp.Body = io.NopCloser(bytes.NewReader(body))
 
 	if code := httpResp.StatusCode; code < 200 || code > 399 {

@@ -149,13 +149,15 @@ if err != nil {
 
 ## 文件与归档下载
 
-无 JSON schema 的接口(归档、原始文件、图片、构建日志、Release/commit 附件、LFS 预签名)返回 `*Response`，响应体已缓冲、可重复读:
+无 JSON schema 的接口(归档、原始文件、图片、构建日志、Release/commit 附件、LFS 预签名)返回 `*Response`，响应体已缓冲——`resp.Body` 可按流读一次，`resp.BodyBytes()` 可随时多次取:
 
 ```go
 // ref_with_path 支持: 分支名 / 标签名 / 提交哈希 / 分支名/文件路径 等
 resp, err := client.Git.GetArchive(ctx, "org/repo", "main")
 if err != nil { panic(err) }
 data, _ := io.ReadAll(resp.Body) // tar/zip 归档内容
+// 或者
+data, _ := resp.BodyBytes()      // 缓冲副本, 可多次调用
 ```
 
 > 302 预签名下载由 `http.Client` 自动跟随、直接拿到内容；需要 URL 本身时可用 `cnb.WithHTTPClient` 注入关闭重定向的 client。

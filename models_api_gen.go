@@ -35,7 +35,7 @@ type Branch struct {
 
 type BranchDetail struct {
 	// Commit 分支指向的最新提交信息。Latest commit of the branch.
-	Commit map[string]any `json:"commit"`
+	Commit Commit `json:"commit"`
 	// Locked 分支是否被锁定。Whether the branch is locked.
 	Locked bool `json:"locked"`
 	// Name 分支名称。Branch name.
@@ -167,11 +167,11 @@ type CodeIssueRecord struct {
 
 type Commit struct {
 	// Author 提交的作者信息。Commit author info.
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// Commit 提交的详细信息。Commit detailed information.
-	Commit map[string]any `json:"commit"`
+	Commit CommitObject `json:"commit"`
 	// Committer 提交的提交者信息。Commit committer information.
-	Committer map[string]any `json:"committer"`
+	Committer UserInfo `json:"committer"`
 	// Parents 父提交列表。Parent commit list.
 	Parents []CommitParent `json:"parents"`
 	// Sha 提交的哈希值。Commit hash.
@@ -180,7 +180,7 @@ type Commit struct {
 
 type CommitAsset struct {
 	// Author 提交附件作者信息。Commit attachment author info.
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// ContentType 附件内容类型。Attachment content type.
 	ContentType string `json:"content_type"`
 	// CreatedAt 附件创建时间。Attachment created at.
@@ -226,17 +226,17 @@ type CommitDiffFilePatch struct {
 
 type CommitObject struct {
 	// Author 提交的作者签名信息。Commit author signature.
-	Author map[string]any `json:"author"`
+	Author Signature `json:"author"`
 	// CommentCount 提交的评论数量。Commit comment count.
 	CommentCount int `json:"comment_count"`
 	// Committer 提交的提交者签名信息。Commit committer signature.
-	Committer map[string]any `json:"committer"`
+	Committer Signature `json:"committer"`
 	// Message 提交的消息内容。Commit message.
 	Message string `json:"message"`
 	// Tree 提交对应的树对象信息。Tree object corresponding to the commit.
-	Tree map[string]any `json:"tree"`
+	Tree CommitObjectTree `json:"tree"`
 	// Verification 提交的验证信息。Commit verification information.
-	Verification map[string]any `json:"verification"`
+	Verification CommitObjectVerification `json:"verification"`
 }
 
 type CommitObjectTree struct {
@@ -273,15 +273,15 @@ type CommitStatuses struct {
 
 type CompareResponse struct {
 	// BaseCommit 基准对比提交。Base comparison commit.
-	BaseCommit map[string]any `json:"base_commit"`
+	BaseCommit Commit `json:"base_commit"`
 	// Commits 提交列表。Commit list.
 	Commits []Commit `json:"commits"`
 	// Files 文件差异列表。File diff list.
 	Files []CommitDiffFilePatch `json:"files"`
 	// HeadCommit 源分支最新提交。 Source branch latest commit.
-	HeadCommit map[string]any `json:"head_commit"`
+	HeadCommit Commit `json:"head_commit"`
 	// MergeBaseCommit 共同祖先提交。Common ancestor commit.
-	MergeBaseCommit map[string]any `json:"merge_base_commit"`
+	MergeBaseCommit Commit `json:"merge_base_commit"`
 	// TotalCommits 总提交数。Total commit count.
 	TotalCommits int `json:"total_commits"`
 }
@@ -313,7 +313,7 @@ type Content struct {
 
 type ContributorTrend struct {
 	// Author 贡献者信息。Contributor information.
-	Author map[string]any `json:"author"`
+	Author Author `json:"author"`
 	// CommitCount 贡献者的总提交数。 Total commits by the contributor.
 	CommitCount int `json:"commit_count"`
 	// Weeks 贡献者以周为单位的提交趋势数据。 Contributor weekly commit trend data.
@@ -391,7 +391,7 @@ type Issue struct {
 	// Assignees Issue处理人列表，最多支持8个处理人。
 	Assignees []UserInfo `json:"assignees"`
 	// Author Issue创建者信息。
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// ClosedAt Issue关闭时间。Issue closed time.
 	ClosedAt string `json:"closed_at"`
 	// CommentCount Issue评论数量。
@@ -424,7 +424,7 @@ type Issue struct {
 
 type IssueActivity struct {
 	// Actor 动态发起人。Activity initiator.
-	Actor map[string]any `json:"actor"`
+	Actor UserInfo `json:"actor"`
 	// ActorAccessRole 动态发起人的仓库访问角色。Activity initiator repo access role.
 	ActorAccessRole string `json:"actor_access_role"`
 	// CreatedAt 创建时间。Created at.
@@ -454,7 +454,7 @@ type IssueAssetUploadURL struct {
 
 type IssueComment struct {
 	// Author 发表评论的用户信息。Comment author user information.
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// Body 评论的内容。Comment content.
 	Body string `json:"body"`
 	// CreatedAt 评论的创建时间。Comment created at.
@@ -464,7 +464,7 @@ type IssueComment struct {
 	// Reactions Reaction 数量列表。
 	Reactions []GitInternalAppVcsServiceBffApiSceneReaction `json:"reactions"`
 	// Statuses 该评论关联的状态，按分类分组（如 `npc`）。Statuses attached to the comment, grouped by category (e.g. `npc`).
-	Statuses map[string][]StatusGroup `json:"statuses"`
+	Statuses StatusesMap `json:"statuses"`
 	// UpdatedAt 评论的更新时间。Comment updated at.
 	UpdatedAt string `json:"updated_at"`
 }
@@ -473,7 +473,7 @@ type IssueDetail struct {
 	// Assignees Issue处理人列表，最多支持8个处理人。
 	Assignees []UserInfo `json:"assignees"`
 	// Author Issue创建者信息。
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// Body Issue内容正文。
 	Body string `json:"body"`
 	// ClosedAt Issue关闭时间。Issue closed time.
@@ -503,7 +503,7 @@ type IssueDetail struct {
 	// StateReason 状态变更原因。枚举值：`open`,`completed`,`not_planned`,`reopened`
 	StateReason string `json:"state_reason"`
 	// Statuses Statuses 该 Issue 关联的状态，按分类分组（如 `npc`）。Statuses attached to the issue, grouped by category (e.g. `npc`).
-	Statuses map[string][]StatusGroup `json:"statuses"`
+	Statuses StatusesMap `json:"statuses"`
 	// Title Issue标题，长度限制2-255字符。
 	Title string `json:"title"`
 	// UpdatedAt Issue最后更新时间。
@@ -543,11 +543,11 @@ type Label struct {
 
 type LabelInfo struct {
 	// AppliedBy 贴标者信息。Tagger information.
-	AppliedBy map[string]any `json:"applied_by"`
+	AppliedBy UserInfo `json:"applied_by"`
 	// Color 标签颜色。Tag color.
 	Color string `json:"color"`
 	// Creator 标签创建者信息。Tag creator information.
-	Creator map[string]any `json:"creator"`
+	Creator UserInfo `json:"creator"`
 	// Description 标签描述。Tag description.
 	Description string `json:"description"`
 	// Id 标签ID。Tag ID.
@@ -750,15 +750,15 @@ type PostTagFrom struct {
 
 type Pull struct {
 	// Author 作者信息。Author information.
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// Base 目标分支信息。 Target branch info.
-	Base map[string]any `json:"base"`
+	Base PullRef `json:"base"`
 	// BlockedOn 阻塞原因。枚举值：`no_merge_base`,`internal_error`,`code_conflict`,`status_check`,`waiting_review`
 	BlockedOn string `json:"blocked_on"`
 	// Body 合并请求内容。Merge request content.
 	Body string `json:"body"`
 	// Head 源分支信息。 Source branch info.
-	Head map[string]any `json:"head"`
+	Head PullRef `json:"head"`
 	// IsForceMerged 是否强制合并。Whether the pull request was force-merged, bypassing branch protection rules.
 	IsForceMerged bool `json:"is_force_merged"`
 	// IsMerged 是否已经合并。Whether the pull request has been merged.
@@ -770,7 +770,7 @@ type Pull struct {
 	// MergeableState 可合并状态。枚举值：`checking`,`mergeable`,`merging`,`merged`,`conflict`,`no-merge-base`
 	MergeableState string `json:"mergeable_state"`
 	// MergedBy 合并者信息。Merger information.
-	MergedBy map[string]any `json:"merged_by"`
+	MergedBy UserInfo `json:"merged_by"`
 	// Number 合并请求唯一标识符编号。Merge request unique identifier number.
 	Number string `json:"number"`
 	// Reviewers 评审人列表，包含评审状态信息。Reviewer list with review status.
@@ -778,7 +778,7 @@ type Pull struct {
 	// State 合并请求状态。枚举值：`open`,`closed`,`merged`
 	State string `json:"state"`
 	// Statuses Statuses 该合并请求关联的状态，按分类分组（如 `npc`）。Statuses attached to the pull request, grouped by category (e.g. `npc`).
-	Statuses map[string][]StatusGroup `json:"statuses"`
+	Statuses StatusesMap `json:"statuses"`
 	// Title 合并请求标题。Merge request title.
 	Title string `json:"title"`
 }
@@ -828,7 +828,7 @@ type PullRef struct {
 	// Ref 分支引用名称。示例值：`refs/heads/main`
 	Ref string `json:"ref"`
 	// Repo 关联的仓库信息。Associated repository info.
-	Repo map[string]any `json:"repo"`
+	Repo ApiRepo `json:"repo"`
 	// Sha 提交哈希值。Commit hash.
 	Sha string `json:"sha"`
 }
@@ -837,7 +837,7 @@ type PullRefInfo struct {
 	// Ref 分支引用名称。Branch reference name.
 	Ref string `json:"ref"`
 	// Repo 关联的仓库信息。Associated repository info.
-	Repo map[string]any `json:"repo"`
+	Repo RepoInfo `json:"repo"`
 	// Sha 提交哈希值。Commit hash.
 	Sha string `json:"sha"`
 }
@@ -846,9 +846,9 @@ type PullRequest struct {
 	// Assignees 处理人列表。Assignee list.
 	Assignees []UserInfo `json:"assignees"`
 	// Author 作者信息。Author information.
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// Base 目标分支信息。 Target branch info.
-	Base map[string]any `json:"base"`
+	Base PullRef `json:"base"`
 	// BlockedOn 阻塞原因。枚举值：`no_merge_base`,`internal_error`,`code_conflict`,`status_check`,`waiting_review`
 	BlockedOn string `json:"blocked_on"`
 	// Body 合并请求内容。Merge request content.
@@ -858,7 +858,7 @@ type PullRequest struct {
 	// CreatedAt 创建时间。Created at.
 	CreatedAt string `json:"created_at"`
 	// Head 源分支信息。 Source branch info.
-	Head map[string]any `json:"head"`
+	Head PullRef `json:"head"`
 	// IsForceMerged 是否强制合并。Whether the pull request was force-merged, bypassing branch protection rules.
 	IsForceMerged bool `json:"is_force_merged"`
 	// IsMerged 是否已经合并。Whether the pull request has been merged.
@@ -872,11 +872,11 @@ type PullRequest struct {
 	// MergeableState 可合并状态。枚举值：`checking`,`mergeable`,`merging`,`merged`,`conflict`,`no-merge-base`
 	MergeableState string `json:"mergeable_state"`
 	// MergedBy 合并者信息。Merger information.
-	MergedBy map[string]any `json:"merged_by"`
+	MergedBy UserInfo `json:"merged_by"`
 	// Number Pulls唯一标识编号。
 	Number string `json:"number"`
 	// Repo 仓库信息。Repository information.
-	Repo map[string]any `json:"repo"`
+	Repo ApiRepo `json:"repo"`
 	// ReviewCount 评审数量。Review count.
 	ReviewCount int `json:"review_count"`
 	// State 合并请求状态。枚举值：`open`,`closed`,`merged`
@@ -889,7 +889,7 @@ type PullRequest struct {
 
 type PullRequestComment struct {
 	// Author 评论作者信息。Comment author info.
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// Body 评论内容。Comment content.
 	Body string `json:"body"`
 	// CreatedAt 创建时间。Created at.
@@ -899,7 +899,7 @@ type PullRequestComment struct {
 	// Reactions Reaction 数量列表。
 	Reactions []SceneReaction `json:"reactions"`
 	// Statuses 该评论关联的状态，按分类分组（如 `npc`）。Statuses attached to the comment, grouped by category (e.g. `npc`).
-	Statuses map[string][]StatusGroup `json:"statuses"`
+	Statuses StatusesMap `json:"statuses"`
 	// UpdatedAt 最后更新时间。 Last updated at.
 	UpdatedAt string `json:"updated_at"`
 }
@@ -908,15 +908,15 @@ type PullRequestInfo struct {
 	// Assignees 处理人列表。Assignee list.
 	Assignees []UserInfo `json:"assignees"`
 	// Author 作者信息。Author information.
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// Base 目标分支信息。 Target branch info.
-	Base map[string]any `json:"base"`
+	Base PullRefInfo `json:"base"`
 	// BlockedOn 阻塞原因。枚举值：`no_merge_base`,`internal_error`,`code_conflict`,`status_check`,`waiting_review`
 	BlockedOn string `json:"blocked_on"`
 	// CreatedAt 创建时间。Created at.
 	CreatedAt string `json:"created_at"`
 	// Head 源分支信息。 Source branch info.
-	Head map[string]any `json:"head"`
+	Head PullRefInfo `json:"head"`
 	// Labels 标签列表。Tag list.
 	Labels []Label `json:"labels"`
 	// LastActedAt 最后更新时间。 Last updated at.
@@ -924,11 +924,11 @@ type PullRequestInfo struct {
 	// MergeableState 可合并状态。枚举值：`checking`,`mergeable`,`merging`,`merged`,`conflict`,`no-merge-base`
 	MergeableState string `json:"mergeable_state"`
 	// MergedBy 合并者信息。Merger information.
-	MergedBy map[string]any `json:"merged_by"`
+	MergedBy UserInfo `json:"merged_by"`
 	// Number Pull唯一标识编号。
 	Number string `json:"number"`
 	// Repo 仓库信息。Repository information.
-	Repo map[string]any `json:"repo"`
+	Repo RepoInfo `json:"repo"`
 	// Reviewers 评审者列表。Reviewer list.
 	Reviewers []UserInfo `json:"reviewers"`
 	// State Pull状态。枚举值：`open`,`closed`,`merged`
@@ -956,7 +956,7 @@ type PullRequestSettings struct {
 
 type PullReview struct {
 	// Author Review的作者信息。
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// Body Review的详细内容。
 	Body string `json:"body"`
 	// CreatedAt Review的创建时间。
@@ -966,14 +966,14 @@ type PullReview struct {
 	// State Review的状态。枚举值：`approved`、`changes_requested`、`commented`、`dismissed`、`pending`等。
 	State string `json:"state"`
 	// Statuses Statuses 该 Review 关联的状态，按分类分组（如 `npc`）。Statuses attached to the review, grouped by category (e.g. `npc`).
-	Statuses map[string][]StatusGroup `json:"statuses"`
+	Statuses StatusesMap `json:"statuses"`
 	// UpdatedAt Review的最后更新时间。
 	UpdatedAt string `json:"updated_at"`
 }
 
 type PullReviewComment struct {
 	// Author 评论的作者信息。Comment author info.
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// Body 评论的具体内容。Comment specific content.
 	Body string `json:"body"`
 	// CommitHash 评论所基于的提交哈希值。Commit hash the comment is based on.
@@ -1003,7 +1003,7 @@ type PullReviewComment struct {
 	// StartSide 评论起始位置的代码版本侧。枚举值：`left`,`right`
 	StartSide string `json:"start_side"`
 	// Statuses Statuses 该评审评论关联的状态，按分类分组（如 `npc`）。Statuses attached to the review comment, grouped by category (e.g. `npc`).
-	Statuses map[string][]StatusGroup `json:"statuses"`
+	Statuses StatusesMap `json:"statuses"`
 	// SubjectType 评论对象类型。枚举值：`line`,`file`
 	SubjectType string `json:"subject_type"`
 	// UpdatedAt 评论的最后更新时间。Comment last updated at.
@@ -1042,7 +1042,7 @@ type PullReviewer struct {
 	// ReviewState 评审状态。枚举值：`pending`,`commented`,`approved`,`changes_requested`,`dismissed`。
 	ReviewState string `json:"review_state"`
 	// User 评审人信息。Reviewer information.
-	User map[string]any `json:"user"`
+	User UserInfo `json:"user"`
 }
 
 type PushLimitSettings struct {
@@ -1072,7 +1072,7 @@ type Release struct {
 	// Assets 附件列表。Attachment list.
 	Assets []ReleaseAsset `json:"assets"`
 	// Author 作者信息。Author information.
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// Body 版本描述。Release description.
 	Body string `json:"body"`
 	// CreatedAt 创建时间。Created at.
@@ -1123,7 +1123,7 @@ type ReleaseAsset struct {
 	// UpdatedAt 更新时间。Updated at.
 	UpdatedAt string `json:"updated_at"`
 	// Uploader 附件上传者信息。Attachment uploader information.
-	Uploader map[string]any `json:"uploader"`
+	Uploader UserInfo `json:"uploader"`
 	// Url API下载URL（通过API域名，用于程序化下载）。API download URL (via API domain, for programmatic download).
 	Url string `json:"url"`
 }
@@ -1141,7 +1141,7 @@ type ApiRepo struct {
 
 type RepoContribTrend struct {
 	// Meta 元数据信息，包含生成分支、哈希和时间戳。Metadata information, including generation branch, hash, and timestamp.
-	Meta map[string]any `json:"meta"`
+	Meta Meta `json:"meta"`
 	// RepoData 仓库级别的周度统计数据。Weekly statistics for the repository.
 	RepoData []Week `json:"repo_data"`
 	// UserTotal 贡献者总数。Total contributors.
@@ -1217,7 +1217,7 @@ type StatusesMap struct {
 
 type Tag struct {
 	// Commit 标签指向的commit对象详细信息。
-	Commit map[string]any `json:"commit"`
+	Commit Commit `json:"commit"`
 	// Name 标签名称。Tag name.
 	Name string `json:"name"`
 	// Target 标签目标对象哈希值。Tag target object hash.
@@ -1225,7 +1225,7 @@ type Tag struct {
 	// TargetType 目标对象类型。Target object type.
 	TargetType string `json:"target_type"`
 	// Verification 标签的GPG签名验证信息。Tag GPG signature verification info.
-	Verification map[string]any `json:"verification"`
+	Verification TagObjectVerification `json:"verification"`
 }
 
 type TagObjectVerification struct {
@@ -1271,7 +1271,7 @@ type UserIssue struct {
 	// Assignees Issue处理人列表，最多支持8个处理人。
 	Assignees []UserInfo `json:"assignees"`
 	// Author Issue创建者信息。
-	Author map[string]any `json:"author"`
+	Author UserInfo `json:"author"`
 	// ClosedAt Issue关闭时间。Issue closed time.
 	ClosedAt string `json:"closed_at"`
 	// CommentCount Issue评论数量。
@@ -1291,7 +1291,7 @@ type UserIssue struct {
 	// Priority Issue优先级。枚举值：`-2P`,`-1P`,`P0`,`P1`,`P2`,`P3`
 	Priority string `json:"priority"`
 	// Repo 关联的仓库信息。Associated repository info.
-	Repo map[string]any `json:"repo"`
+	Repo RepoInfo `json:"repo"`
 	// StartedAt Issue开始日期。
 	StartedAt string `json:"started_at"`
 	// State Issue状态。枚举值：`open`,`closed`

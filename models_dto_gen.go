@@ -22,15 +22,15 @@ type ActivityCalendarDate struct {
 type ActivityCreateRepoDetail struct {
 	CreateAt string `json:"create_at"`
 	// Detail 公仓转私仓或仓库被删除后为 null
-	Detail map[string]any `json:"detail"`
+	Detail Repos4UserBase `json:"detail"`
 	// ExposedRepoPath activity 发生时仓库的 path，这时的 path 是可以公开的
 	ExposedRepoPath string `json:"exposed_repo_path"`
 	// Freeze 仓库是否封禁。Whether the repository is banned.
 	Freeze bool `json:"freeze"`
 	// RepoUnaccessible 仓库是否不可访问（公仓转私仓或仓库被删除后不可访问）。Whether the repo is inaccessible (public→private or deleted).
 	RepoUnaccessible bool `json:"repo_unaccessible"`
-	// VisibilityLevel 仓库可见性。Repository visibility. 可选值: Private, Public, Secret.
-	VisibilityLevel string `json:"visibility_level"`
+	// VisibilityLevel 仓库可见性。Repository visibility.
+	VisibilityLevel Visibility `json:"visibility_level"`
 }
 
 type ActivityDate struct {
@@ -52,14 +52,14 @@ type ActivityDate struct {
 type ActivityJoinGroupDetail struct {
 	CreateAt string `json:"create_at"`
 	// Detail 组织详情，组织被删后为 null
-	Detail map[string]any `json:"detail"`
+	Detail OrganizationUnion `json:"detail"`
 	// Remark 组织别名，组织被删除后才有值。Organization alias. Only has a value after the organization is deleted.
 	Remark string `json:"remark"`
 }
 
 type ActivityRepoDetail struct {
 	// Detail 公仓转私仓或仓库被删除后为 null
-	Detail map[string]any `json:"detail"`
+	Detail ActivitySlugDetail `json:"detail"`
 	// ExposedRepoPath activity 发生时仓库的 path，这时的 path 是可以公开的
 	ExposedRepoPath string `json:"exposed_repo_path"`
 	// Freeze 仓库是否封禁。Whether the repository is banned.
@@ -67,8 +67,8 @@ type ActivityRepoDetail struct {
 	// RepoUnaccessible 仓库是否不可访问（公仓转私仓或仓库被删除后不可访问）。Whether the repo is inaccessible (public→private or deleted).
 	RepoUnaccessible bool    `json:"repo_unaccessible"`
 	Time             float64 `json:"time"`
-	// VisibilityLevel 仓库可见性。Repository visibility. 可选值: Private, Public, Secret.
-	VisibilityLevel string `json:"visibility_level"`
+	// VisibilityLevel 仓库可见性。Repository visibility.
+	VisibilityLevel Visibility `json:"visibility_level"`
 }
 
 type ActivitySlugDetail struct {
@@ -82,7 +82,7 @@ type AiChatCompletionsChoice struct {
 	// Index 索引。Index.
 	Index int `json:"index"`
 	// Message 消息。Message.
-	Message map[string]any `json:"message"`
+	Message Message `json:"message"`
 }
 
 type AiChatCompletionsReq struct {
@@ -113,10 +113,10 @@ type AssetRecords struct {
 	// OriginPath 来源地址，例如 release 附件的来源地址是对应的 release 页面。issue和pr文件没有。
 	OriginPath string `json:"origin_path"`
 	Path       string `json:"path"`
-	// RecordType 资源类型，slug_img和slug_file可调用DeleteAsset接口直接删除该资源，repo_release和repo_commit则不行 可选值: slug_img, slug_file, repo_release, repo_commit, issue_img, issue_file, pull_img, pull_file, unknown.
-	RecordType string `json:"record_type"`
-	Referer    string `json:"referer"`
-	SizeInByte int    `json:"size_in_byte"`
+	// RecordType 资源类型，slug_img和slug_file可调用DeleteAsset接口直接删除该资源，repo_release和repo_commit则不行
+	RecordType AssetRecordType `json:"record_type"`
+	Referer    string          `json:"referer"`
+	SizeInByte int             `json:"size_in_byte"`
 }
 
 // Assets 资源信息，包含资源路径、内容类型与上传请求参数。 Asset info, including resource path, content type and upload request params.
@@ -137,7 +137,7 @@ type Badge struct {
 	// Desc 徽章描述。Badge description.
 	Desc string `json:"desc"`
 	// Group 徽章分组。Badge group.
-	Group map[string]any `json:"group"`
+	Group BadgeGroup `json:"group"`
 	// Link 徽章链接。Badge link.
 	Link string `json:"link"`
 	// Name 徽章名称。Badge name.
@@ -161,7 +161,7 @@ type BuildAiAuditResult struct {
 	// Code 返回码，0 表示成功。Return code. 0 means success.
 	Code int `json:"code"`
 	// Content AI 用量聚合数据。AI usage aggregated data.
-	Content map[string]any `json:"content"`
+	Content BuildAiUsageSection `json:"content"`
 	// RequestLogPageSize 每页条数，0 表示无记录。Page size; 0 means no records.
 	RequestLogPageSize int `json:"request_log_page_size"`
 	// RequestLogPages AI 请求日志总页数，0 表示无记录。Total pages; 0 means no records.
@@ -185,7 +185,7 @@ type BuildAiRequestDetailResult struct {
 	// Code 返回码，0 表示成功。Return code. 0 means success.
 	Code int `json:"code"`
 	// Content 请求详情。Request detail.
-	Content map[string]any `json:"content"`
+	Content BuildAiRequestDetailEntry `json:"content"`
 }
 
 type BuildAiRequestEntry struct {
@@ -259,7 +259,7 @@ type BuildAiUsageSection struct {
 	// Models 按模型名称拆分的指标明细，key 为模型名。Metrics grouped by model name (key: model).
 	Models map[string]BuildAiUsageMetric `json:"models"`
 	// Total 所有模型的聚合指标。Aggregated metrics across all models.
-	Total map[string]any `json:"total"`
+	Total BuildAiUsageMetric `json:"total"`
 }
 
 // BuildCommonResult 删除流水线日志内容请求的结果，包含返回码与描述。 Result of deleting pipeline log content, including return code and description.
@@ -338,7 +338,7 @@ type ChartPackageDetail struct {
 	// Guarded Guarded 标记该制品包下是否存在被保护的制品 仅 docker/helm/dockermodel 在被保护时返回 true
 	Guarded bool `json:"guarded"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Package 制品标识。Artifact identifier.
 	Package string `json:"package"`
 	// PullCount 总拉取次数。Total pull count.
@@ -367,9 +367,9 @@ type ChartTag struct {
 	// IsDeprecated 是否已弃用。Whether deprecated.
 	IsDeprecated bool `json:"is_deprecated"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Metadata 元数据。Metadata.
-	Metadata map[string]any `json:"metadata"`
+	Metadata Metadata `json:"metadata"`
 	// Name 标签名。Tag name.
 	Name string `json:"name"`
 	// PullCount 总拉取次数。Total pull count.
@@ -392,9 +392,9 @@ type ChartTagDetail struct {
 	// IsDeprecated 是否已弃用。Whether deprecated.
 	IsDeprecated bool `json:"is_deprecated"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Metadata 元数据。Metadata.
-	Metadata map[string]any `json:"metadata"`
+	Metadata Metadata `json:"metadata"`
 	// Package 制品标识。Artifact identifier.
 	Package string `json:"package"`
 	// PullCount 总拉取次数。Total pull count.
@@ -506,7 +506,7 @@ type CommonRegistryPackageDetail struct {
 	// Guarded Guarded 标记该制品包下是否存在被保护的制品 仅 docker/helm/dockermodel 在被保护时返回 true
 	Guarded bool `json:"guarded"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Package 制品标识。Artifact identifier.
 	Package string `json:"package"`
 	// PullCount 总拉取次数。Total pull count.
@@ -529,7 +529,7 @@ type CommonRegistryProvenance struct {
 	// GitCommit GitCommit git提交记录.
 	GitCommit string `json:"git_commit"`
 	// LastPusher LastPusher 最后推送人.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Package Package 制品名.
 	Package string `json:"package"`
 	// RegistryAddress RegistryAddress 制品库地址.
@@ -550,7 +550,7 @@ type CommonRegistryTag struct {
 	// HasProvenance 是否有出生证明。Whether it has provenance.
 	HasProvenance bool `json:"has_provenance"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Name 标签名。Tag name.
 	Name string `json:"name"`
 	// PullCount 总拉取次数。Total pull count.
@@ -577,8 +577,8 @@ type CommonRegistryTagDetail struct {
 	// HasProvenance HasProvenance 是否有出生证明; pypi和conan制品由于有多架构，取决于最新推送.
 	HasProvenance bool `json:"has_provenance"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
-	Metadata   DtoMetaData    `json:"metadata"`
+	LastPusher LastPusher  `json:"last_pusher"`
+	Metadata   DtoMetaData `json:"metadata"`
 	// Package 制品标识。Artifact identifier.
 	Package string `json:"package"`
 	// PullCount 总拉取次数。Total pull count.
@@ -641,7 +641,7 @@ type ConanPackage struct {
 
 type ConanProvenance struct {
 	// LastPusher LastPusher 最后推送人.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Package Package 制品名.
 	Package string `json:"package"`
 	// RegistryAddress RegistryAddress 制品库地址.
@@ -678,8 +678,8 @@ type ConanRegistryTagDetail struct {
 	// HasProvenance HasProvenance 是否有出生证明; pypi和conan制品由于有多架构，取决于最新推送.
 	HasProvenance bool `json:"has_provenance"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
-	Metadata   ConanMetaData  `json:"metadata"`
+	LastPusher LastPusher    `json:"last_pusher"`
+	Metadata   ConanMetaData `json:"metadata"`
 	// Package 制品标识。Artifact identifier.
 	Package string `json:"package"`
 	// PullCount 总拉取次数。Total pull count.
@@ -726,7 +726,7 @@ type ContainerPackageDetail struct {
 	// Guarded Guarded 标记该制品包下是否存在被保护的制品 仅 docker/helm/dockermodel 在被保护时返回 true
 	Guarded bool `json:"guarded"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Package 制品标识。Artifact identifier.
 	Package string `json:"package"`
 	// PullCount 总拉取次数。Total pull count.
@@ -750,7 +750,7 @@ type ContainerProvenance struct {
 	GitCommit string           `json:"git_commit"`
 	Images    []ContainerImage `json:"images"`
 	// LastPusher LastPusher 最后推送人.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Package Package 制品名.
 	Package string `json:"package"`
 	// RegistryAddress RegistryAddress 制品库地址.
@@ -765,7 +765,7 @@ type ContainerTag struct {
 	// Address 制品地址。Artifact address.
 	Address string `json:"address"`
 	// Annotations 注解。Annotations.
-	Annotations map[string]any `json:"annotations"`
+	Annotations ContainerAnnotation `json:"annotations"`
 	// GitAddress 源仓库地址。Source repository URL.
 	GitAddress string `json:"git_address"`
 	// Guarded Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true
@@ -775,7 +775,7 @@ type ContainerTag struct {
 	// Images 镜像列表。Image list.
 	Images []ContainerImage `json:"images"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Name 标签名。Tag name.
 	Name string `json:"name"`
 	// PullCount 总拉取次数。Total pull count.
@@ -790,7 +790,7 @@ type ContainerTagDetail struct {
 	// Address 制品地址。Artifact address.
 	Address string `json:"address"`
 	// Annotations 注解。Annotations.
-	Annotations map[string]any `json:"annotations"`
+	Annotations ContainerAnnotation `json:"annotations"`
 	// GitAddress 源仓库地址。Source repository URL.
 	GitAddress string `json:"git_address"`
 	// Guarded Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true
@@ -798,9 +798,9 @@ type ContainerTagDetail struct {
 	// HasProvenance HasProvenance 是否有出生证明; pypi和conan制品由于有多架构，取决于最新推送.
 	HasProvenance bool `json:"has_provenance"`
 	// Image 主镜像。Primary image.
-	Image map[string]any `json:"image"`
+	Image ContainerImage `json:"image"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// MatchesRequestedArch 返回的结果是否和提供的架构匹配。Whether the result matches the requested architecture.
 	MatchesRequestedArch bool `json:"matches_requested_arch"`
 	// Options 可选镜像列表。Optional image list.
@@ -878,7 +878,7 @@ type DockerModelPackageDetail struct {
 	// Guarded Guarded 标记该制品包下是否存在被保护的制品 仅 docker/helm/dockermodel 在被保护时返回 true
 	Guarded bool `json:"guarded"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Package 制品标识。Artifact identifier.
 	Package string `json:"package"`
 	// PullCount 总拉取次数。Total pull count.
@@ -901,7 +901,7 @@ type DockerModelProvenance struct {
 	// GitCommit GitCommit git提交记录.
 	GitCommit string `json:"git_commit"`
 	// LastPusher LastPusher 最后推送人.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Package Package 制品名.
 	Package string `json:"package"`
 	// RegistryAddress RegistryAddress 制品库地址.
@@ -916,9 +916,9 @@ type DockerModelTag struct {
 	// Address 制品地址。Artifact address.
 	Address string `json:"address"`
 	// Config 模型配置。Model config.
-	Config map[string]any `json:"config"`
+	Config DockerModelConfig `json:"config"`
 	// Descriptor 描述符。Descriptor.
-	Descriptor map[string]any `json:"descriptor"`
+	Descriptor DockerModelDescriptor `json:"descriptor"`
 	// GitAddress 源仓库地址。Source repository URL.
 	GitAddress string `json:"git_address"`
 	// Guarded Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true
@@ -926,7 +926,7 @@ type DockerModelTag struct {
 	// HasProvenance 是否有出生证明。Whether it has provenance.
 	HasProvenance bool `json:"has_provenance"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Name 标签名。Tag name.
 	Name string `json:"name"`
 	// PullCount 总拉取次数。Total pull count.
@@ -941,9 +941,9 @@ type DockerModelTagDetail struct {
 	// Address 制品地址。Artifact address.
 	Address string `json:"address"`
 	// Config 模型配置。Model config.
-	Config map[string]any `json:"config"`
+	Config DockerModelConfig `json:"config"`
 	// Descriptor 描述符。Descriptor.
-	Descriptor map[string]any `json:"descriptor"`
+	Descriptor DockerModelDescriptor `json:"descriptor"`
 	// GitAddress 源仓库地址。Source repository URL.
 	GitAddress string `json:"git_address"`
 	// Guarded Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true
@@ -951,7 +951,7 @@ type DockerModelTagDetail struct {
 	// HasProvenance HasProvenance 是否有出生证明; pypi和conan制品由于有多架构，取决于最新推送.
 	HasProvenance bool `json:"has_provenance"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Package 制品标识。Artifact identifier.
 	Package string `json:"package"`
 	// PullCount 总拉取次数。Total pull count.
@@ -1052,7 +1052,7 @@ type HelmProvenance struct {
 	// GitCommit GitCommit git提交记录.
 	GitCommit string `json:"git_commit"`
 	// LastPusher LastPusher 最后推送人.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Package Package 制品名.
 	Package string `json:"package"`
 	// RegistryAddress RegistryAddress 制品库地址.
@@ -1064,8 +1064,8 @@ type HelmProvenance struct {
 }
 
 type InheritMembersUser struct {
-	// AccessLevel 成员在资源上的权限级别。Member access level on the resource. 可选值: Unknown, Guest, Reporter, Developer, Master, Owner.
-	AccessLevel string `json:"access_level"`
+	// AccessLevel 成员在资源上的权限级别。Member access level on the resource.
+	AccessLevel AccessRole `json:"access_level"`
 	// Appearance 用户外观设置（如主题 light/dark/system）。User appearance setting.
 	Appearance string `json:"appearance"`
 	// Avatar 头像地址。Avatar URL.
@@ -1081,18 +1081,18 @@ type InheritMembersUser struct {
 	// Id 用户唯一标识。User unique ID.
 	Id string `json:"id"`
 	// Inviter 邀请人。Inviter.
-	Inviter map[string]any `json:"inviter"`
+	Inviter Users `json:"inviter"`
 	// JoinTime 加入时间。Join time.
 	JoinTime string `json:"join_time"`
 	// Locked 是否锁定。Whether the user is locked.
 	Locked bool `json:"locked"`
-	// MemberChannel 成员来源渠道。Member channel. 可选值: invite, direct_add, transfer, admin_add.
-	MemberChannel string `json:"member_channel"`
+	// MemberChannel 成员来源渠道。Member channel.
+	MemberChannel ChannelTypeTarget `json:"member_channel"`
 	// Nickname 用户昵称。User nickname.
 	Nickname   string `json:"nickname"`
 	SelfMember bool   `json:"self_member"`
-	// Type 用户类型。User type. 可选值: 0, 1, 2, 3, 4.
-	Type int `json:"type"`
+	// Type 用户类型。User type.
+	Type UserType `json:"type"`
 	// Username 用户名。Username.
 	Username string `json:"username"`
 	// Verified 认证类型。Verification type.
@@ -1216,16 +1216,16 @@ type LogInfo struct {
 
 // MemberAccessLevel 成员在对应资源上的权限，包含资源路径与权限级别。 Member access level on a resource, including resource path and access role.
 type MemberAccessLevel struct {
-	// AccessLevel 权限级别。Access role. 可选值: Unknown, Guest, Reporter, Developer, Master, Owner.
-	AccessLevel string `json:"access_level"`
+	// AccessLevel 权限级别。Access role.
+	AccessLevel AccessRole `json:"access_level"`
 	// Path 资源路径。Resource path.
 	Path string `json:"path"`
 }
 
 // MemberAccessLevelInSlugUnion 资源里面的成员以及权限，包含权限级别与读写/继承权限。 Member and access level in resource, including access role and read/write/inherit privileges.
 type MemberAccessLevelInSlugUnion struct {
-	// AccessLevel 权限级别。Access role. 可选值: Unknown, Guest, Reporter, Developer, Master, Owner.
-	AccessLevel string `json:"access_level"`
+	// AccessLevel 权限级别。Access role.
+	AccessLevel AccessRole `json:"access_level"`
 	// Inherit 是否为继承权限。Whether inherited.
 	Inherit bool `json:"inherit"`
 	// ReadPrivilege 是否可读。Whether readable.
@@ -1286,8 +1286,8 @@ type MissionView struct {
 	Id *string `json:"id,omitempty"`
 	// Name 视图名称。View name.
 	Name *string `json:"name,omitempty"`
-	// Type 视图类型。View type. 可选值: table, board, gantt.
-	Type *string `json:"type,omitempty"`
+	// Type 视图类型。View type.
+	Type *MissionViewType `json:"type,omitempty"`
 }
 
 // MissionViewConfig 任务集视图配置，包含视图标识、筛选/排序/分组条件与字段配置。 Mission view config, including view ID, selectors, sorts, group and field configuration.
@@ -1295,15 +1295,15 @@ type MissionViewConfig struct {
 	// Fields 字段配置。Field configuration.
 	Fields []MissionViewFieldConfig `json:"fields,omitempty"`
 	// Group 分组信息。Group information.
-	Group map[string]any `json:"group,omitempty"`
+	Group *MissionViewGroup `json:"group,omitempty"`
 	// Id 视图唯一标识。View unique identifier.
 	Id *string `json:"id,omitempty"`
 	// Selectors 筛选条件。Filter conditions.
 	Selectors []MissionViewSelector `json:"selectors,omitempty"`
 	// Sorts 排序条件。Sort conditions.
 	Sorts []MissionViewSort `json:"sorts,omitempty"`
-	// Type 视图类型。View type. 可选值: table, board, gantt.
-	Type *string `json:"type,omitempty"`
+	// Type 视图类型。View type.
+	Type *MissionViewType `json:"type,omitempty"`
 }
 
 type MissionViewFieldConfig struct {
@@ -1337,8 +1337,8 @@ type MissionViewSort struct {
 
 // Missions4User 用户的任务集查询接口返回值，包含任务集信息、完整路径与访问者相关信息。 User mission query response, including mission info, full path and visitor-specific info.
 type Missions4User struct {
-	// Access 访问者对该任务集的权限级别。Visitor's access level on the mission. 可选值: Unknown, Guest, Reporter, Developer, Master, Owner.
-	Access string `json:"access"`
+	// Access 访问者对该任务集的权限级别。Visitor's access level on the mission.
+	Access AccessRole `json:"access"`
 	// CreatedAt 创建时间。Creation time.
 	CreatedAt string `json:"created_at"`
 	// Description 任务集描述。Mission description.
@@ -1361,8 +1361,8 @@ type Missions4User struct {
 	Stared bool `json:"stared"`
 	// UpdatedAt 更新时间。Update time.
 	UpdatedAt string `json:"updated_at"`
-	// VisibilityLevel 任务集可见性。Mission visibility level. 可选值: Private, Public, Secret.
-	VisibilityLevel string `json:"visibility_level"`
+	// VisibilityLevel 任务集可见性。Mission visibility level.
+	VisibilityLevel Visibility `json:"visibility_level"`
 }
 
 type NpcActionListResult struct {
@@ -1514,11 +1514,11 @@ type OpenAPIArtifactLicenseOverview struct {
 
 type OpenAPIArtifactOverview struct {
 	// ArtifactLicense 制品 License 概览。Artifact license overview.
-	ArtifactLicense map[string]any `json:"artifact_license"`
+	ArtifactLicense OpenAPIArtifactLicenseOverview `json:"artifact_license"`
 	// ArtifactSbom 制品 SBOM 概览。Artifact SBOM overview.
-	ArtifactSbom map[string]any `json:"artifact_sbom"`
+	ArtifactSbom OpenAPIArtifactSbomOverview `json:"artifact_sbom"`
 	// ArtifactVulnerability 制品漏洞概览。Artifact vulnerability overview.
-	ArtifactVulnerability map[string]any `json:"artifact_vulnerability"`
+	ArtifactVulnerability OpenAPIArtifactVulOverview `json:"artifact_vulnerability"`
 }
 
 type OpenAPIArtifactSbomOverview struct {
@@ -1543,8 +1543,8 @@ type OpenAPIArtifactVulOverview struct {
 
 // OrganizationAccess 用户查询的组织信息及权限信息，包含组织信息、当前用户的最大权限与置顶信息。 User-visible organization info with access, including org info, max access role and pin info.
 type OrganizationAccess struct {
-	// AccessRole AccessRole 用户在当前资源的最大权限 可选值: Unknown, Guest, Reporter, Developer, Master, Owner.
-	AccessRole string `json:"access_role"`
+	// AccessRole AccessRole 用户在当前资源的最大权限
+	AccessRole AccessRole `json:"access_role"`
 	// AllMemberCount 全部成员数。All member count.
 	AllMemberCount int `json:"all_member_count"`
 	// AllSubGroupCount 下面所有层级子组织。All levels of sub-organizations.
@@ -1702,8 +1702,8 @@ type OutsideCollaboratorInRepo struct {
 	Locked bool `json:"locked"`
 	// Nickname 用户昵称。User nickname.
 	Nickname string `json:"nickname"`
-	// Type 用户类型。User type. 可选值: 0, 1, 2, 3, 4.
-	Type int `json:"type"`
+	// Type 用户类型。User type.
+	Type UserType `json:"type"`
 	// Username 用户名。Username.
 	Username string `json:"username"`
 	// Verified 认证类型。Verification type.
@@ -1726,13 +1726,13 @@ type Package struct {
 	// LastArtifactName 最近产物名。Last artifact name.
 	LastArtifactName string `json:"last_artifact_name"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Name 包名。Package name.
 	Name string `json:"name"`
 	// Package 制品标识。Artifact identifier.
 	Package string `json:"package"`
-	// PackageType 制品品类。Package type. 可选值: all, docker, helm, docker-model, dockermodel, npm, maven, ohpm, pypi, composer, nuget, conan, cargo, generic.
-	PackageType string `json:"package_type"`
+	// PackageType 制品品类。Package type.
+	PackageType PackageType `json:"package_type"`
 	// PullCount 总拉取次数。Total pull count.
 	PullCount int `json:"pull_count"`
 	// RecentPullCount 最近拉取次数。Recent pull count.
@@ -1834,8 +1834,8 @@ type PyPIRegistryTagDetail struct {
 	// HasProvenance HasProvenance 是否有出生证明; pypi和conan制品由于有多架构，取决于最新推送.
 	HasProvenance bool `json:"has_provenance"`
 	// LastPusher 最后推送人。Last pusher.
-	LastPusher map[string]any `json:"last_pusher"`
-	Metadata   PyPIMetaData   `json:"metadata"`
+	LastPusher LastPusher   `json:"last_pusher"`
+	Metadata   PyPIMetaData `json:"metadata"`
 	// Package 制品标识。Artifact identifier.
 	Package string `json:"package"`
 	// PullCount 总拉取次数。Total pull count.
@@ -1854,7 +1854,7 @@ type PyPIRegistryTagDetail struct {
 
 type PypiProvenance struct {
 	// LastPusher LastPusher 最后推送人.
-	LastPusher map[string]any `json:"last_pusher"`
+	LastPusher LastPusher `json:"last_pusher"`
 	// Package Package 制品名.
 	Package string `json:"package"`
 	// RegistryAddress RegistryAddress 制品库地址.
@@ -1880,7 +1880,7 @@ type PypiProvenanceSource struct {
 
 type QueryKnowledgeBaseReq struct {
 	// MetadataFilteringConditions 元数据过滤条件。Metadata filtering conditions.
-	MetadataFilteringConditions map[string]any `json:"metadata_filtering_conditions,omitempty"`
+	MetadataFilteringConditions *MetadataFilteringConditions `json:"metadata_filtering_conditions,omitempty"`
 	// Query 查询语句。Query string.
 	Query *string `json:"query,omitempty"`
 	// ScoreThreshold 分数阈值。Score threshold.
@@ -1912,13 +1912,13 @@ type RankDetailWithIncr struct {
 	// Description 仓库描述。Repository description.
 	Description string `json:"description"`
 	// DisplayModule 仓库展示模块。Repository display module.
-	DisplayModule map[string]any `json:"display_module"`
-	// Flags 仓库特性标记。Repository feature flags. 可选值: Unknown, KnowledgeBase, NPC, Skills, Wiki.
-	Flags string `json:"flags"`
+	DisplayModule RepoDisplayModule `json:"display_module"`
+	// Flags 仓库特性标记。Repository feature flags.
+	Flags Repo `json:"flags"`
 	// ForkCount Fork 数量。Fork count.
 	ForkCount int `json:"fork_count"`
 	// ForkedFromRepo 预留。Reserved.
-	ForkedFromRepo map[string]any `json:"forked_from_repo"`
+	ForkedFromRepo Slugs `json:"forked_from_repo"`
 	// Freeze 是否冻结。Whether the repository is frozen.
 	Freeze bool `json:"freeze"`
 	// Id 仓库唯一标识。Repository unique ID.
@@ -1930,13 +1930,13 @@ type RankDetailWithIncr struct {
 	// Language 仓库程序语言，预留。Repo language (reserved).
 	Language string `json:"language"`
 	// Languages 仓库语言。Repository language.
-	Languages map[string]any `json:"languages"`
+	Languages RepoLanguage `json:"languages"`
 	// LastUpdateNickname 最新代码更新人姓名。Latest code updater name.
 	LastUpdateNickname string `json:"last_update_nickname"`
 	// LastUpdateUsername 最新代码更新人账户名。Latest code updater username.
 	LastUpdateUsername string `json:"last_update_username"`
 	// LastUpdatedAt 最新代码更新时间。Latest code update time.
-	LastUpdatedAt map[string]any `json:"last_updated_at"`
+	LastUpdatedAt NullTime `json:"last_updated_at"`
 	// License 仓库开源协议。Repository license.
 	License string `json:"license"`
 	// MarkCount 标记数量。Mark count.
@@ -1956,7 +1956,7 @@ type RankDetailWithIncr struct {
 	// Path 完整仓库路径。Full repository path.
 	Path string `json:"path"`
 	// SecondLanguages 第二语言。Second language.
-	SecondLanguages map[string]any `json:"second_languages"`
+	SecondLanguages RepoLanguage `json:"second_languages"`
 	// Site 仓库主页。Repository site.
 	Site string `json:"site"`
 	// SkillScanStatus Skill 仓库扫描结论：unknown/white/suspicious/black，来自 result。Scan result.
@@ -1965,16 +1965,16 @@ type RankDetailWithIncr struct {
 	StarCount int `json:"star_count"`
 	// Stared 当前访问者是否 star。Whether starred by the current visitor.
 	Stared bool `json:"stared"`
-	// Status 仓库状态。Repository status. 可选值: 0, 1, 2.
-	Status int `json:"status"`
+	// Status 仓库状态。Repository status.
+	Status RepoStatus `json:"status"`
 	// Tags 仓库标签列表。Repository tag list.
 	Tags []map[string]any `json:"tags"`
 	// Topics 仓库主题标签。Repository topic tags.
 	Topics string `json:"topics"`
 	// UpdatedAt 更新时间。Update time.
 	UpdatedAt string `json:"updated_at"`
-	// VisibilityLevel 仓库可见性。Repository visibility level. 可选值: Private, Public, Secret.
-	VisibilityLevel string `json:"visibility_level"`
+	// VisibilityLevel 仓库可见性。Repository visibility level.
+	VisibilityLevel Visibility `json:"visibility_level"`
 	// WebUrl 仓库 Web 地址。Repository web URL.
 	WebUrl string `json:"web_url"`
 	// WeightScore 综合权重得分。Weighted score.
@@ -1992,8 +1992,8 @@ type RankLanguageList struct {
 
 // Registry4User 用户的制品仓库查询接口返回值，包含制品库信息、完整路径与访问者相关信息。 User registry query response, including registry info, full path and visitor-specific info.
 type Registry4User struct {
-	// Access 访问者对该制品库的权限级别。Visitor's access level on the registry. 可选值: Unknown, Guest, Reporter, Developer, Master, Owner.
-	Access string `json:"access"`
+	// Access 访问者对该制品库的权限级别。Visitor's access level on the registry.
+	Access AccessRole `json:"access"`
 	// ArtifactPolicy 制品策略。Artifact policy. 可选值: all, snapshot, release.
 	ArtifactPolicy string `json:"artifact_policy"`
 	// CreatedAt 创建时间。Creation time.
@@ -2009,7 +2009,7 @@ type Registry4User struct {
 	// LastPushTime 最近推送时间。Last push time.
 	LastPushTime string `json:"last_push_time"`
 	// LastPushUser 最近推送用户。Last push user.
-	LastPushUser map[string]any `json:"last_push_user"`
+	LastPushUser Users `json:"last_push_user"`
 	// Name 制品库名称。Registry name.
 	Name string `json:"name"`
 	// OverwritePolicy 覆盖策略。Overwrite policy. 可选值: forbid, allow.
@@ -2029,8 +2029,8 @@ type Registry4User struct {
 	UpdatedAt string `json:"updated_at"`
 	// UsedSize 已用容量。Used size.
 	UsedSize int `json:"used_size"`
-	// VisibilityLevel 制品库可见性。Registry visibility level. 可选值: Private, Public, Secret.
-	VisibilityLevel string `json:"visibility_level"`
+	// VisibilityLevel 制品库可见性。Registry visibility level.
+	VisibilityLevel Visibility `json:"visibility_level"`
 }
 
 type RepoLanguage struct {
@@ -2105,8 +2105,8 @@ type RepoVolume struct {
 	IsDeleted bool `json:"is_deleted"`
 	// ResourceId 资源 ID。Resource ID.
 	ResourceId string `json:"resource_id"`
-	// ResourceType 资源类型。Resource type. 可选值: 0, 1, 2, 3, 4.
-	ResourceType int `json:"resource_type"`
+	// ResourceType 资源类型。Resource type.
+	ResourceType SlugType `json:"resource_type"`
 	// Slug 仓库地址。Repository path.
 	Slug string `json:"slug"`
 	// Volume 用量：存储 byte，核时核秒，credit 为 milli_credit。Usage: storage byte; core-hour; credit.
@@ -2115,20 +2115,20 @@ type RepoVolume struct {
 
 // Repos4User 用户的仓库查询接口返回值，包含仓库基本信息、简介、统计与访问者相关信息（权限、星标、置顶）。 User repo query response, including repo basic info, profile, statistics and visitor-specific info (access, star, pin).
 type Repos4User struct {
-	// Access 访问者对该仓库的权限级别。Visitor's access level on the repo. 可选值: Unknown, Guest, Reporter, Developer, Master, Owner.
-	Access string `json:"access"`
+	// Access 访问者对该仓库的权限级别。Visitor's access level on the repo.
+	Access AccessRole `json:"access"`
 	// CreatedAt 创建时间。Creation time.
 	CreatedAt string `json:"created_at"`
 	// Description 仓库描述。Repository description.
 	Description string `json:"description"`
 	// DisplayModule 仓库展示模块。Repository display module.
-	DisplayModule map[string]any `json:"display_module"`
-	// Flags 仓库特性标记。Repository feature flags. 可选值: Unknown, KnowledgeBase, NPC, Skills, Wiki.
-	Flags string `json:"flags"`
+	DisplayModule RepoDisplayModule `json:"display_module"`
+	// Flags 仓库特性标记。Repository feature flags.
+	Flags Repo `json:"flags"`
 	// ForkCount Fork 数量。Fork count.
 	ForkCount int `json:"fork_count"`
 	// ForkedFromRepo 预留。Reserved.
-	ForkedFromRepo map[string]any `json:"forked_from_repo"`
+	ForkedFromRepo Slugs `json:"forked_from_repo"`
 	// Freeze 是否冻结。Whether the repository is frozen.
 	Freeze bool `json:"freeze"`
 	// Id 仓库唯一标识。Repository unique ID.
@@ -2136,13 +2136,13 @@ type Repos4User struct {
 	// Language 仓库程序语言，预留。Repo language (reserved).
 	Language string `json:"language"`
 	// Languages 仓库语言。Repository language.
-	Languages map[string]any `json:"languages"`
+	Languages RepoLanguage `json:"languages"`
 	// LastUpdateNickname 最新代码更新人姓名。Latest code updater name.
 	LastUpdateNickname string `json:"last_update_nickname"`
 	// LastUpdateUsername 最新代码更新人账户名。Latest code updater username.
 	LastUpdateUsername string `json:"last_update_username"`
 	// LastUpdatedAt 最新代码更新时间。Latest code update time.
-	LastUpdatedAt map[string]any `json:"last_updated_at"`
+	LastUpdatedAt NullTime `json:"last_updated_at"`
 	// License 仓库开源协议。Repository license.
 	License string `json:"license"`
 	// MarkCount 标记数量。Mark count.
@@ -2166,7 +2166,7 @@ type Repos4User struct {
 	// PinnedTime 置顶时间。Pin time.
 	PinnedTime string `json:"pinned_time"`
 	// SecondLanguages 第二语言。Second language.
-	SecondLanguages map[string]any `json:"second_languages"`
+	SecondLanguages RepoLanguage `json:"second_languages"`
 	// Site 仓库主页。Repository site.
 	Site string `json:"site"`
 	// SkillScanStatus Skill 仓库扫描结论：unknown/white/suspicious/black，来自 result。Scan result.
@@ -2177,16 +2177,16 @@ type Repos4User struct {
 	StarTime string `json:"star_time"`
 	// Stared 访问者是否 star 了该仓库。Whether the visitor has starred the repo.
 	Stared bool `json:"stared"`
-	// Status 仓库状态。Repository status. 可选值: 0, 1, 2.
-	Status int `json:"status"`
+	// Status 仓库状态。Repository status.
+	Status RepoStatus `json:"status"`
 	// Tags 仓库标签列表。Repository tag list.
 	Tags []map[string]any `json:"tags"`
 	// Topics 仓库主题标签。Repository topic tags.
 	Topics string `json:"topics"`
 	// UpdatedAt 更新时间。Update time.
 	UpdatedAt string `json:"updated_at"`
-	// VisibilityLevel 仓库可见性。Repository visibility level. 可选值: Private, Public, Secret.
-	VisibilityLevel string `json:"visibility_level"`
+	// VisibilityLevel 仓库可见性。Repository visibility level.
+	VisibilityLevel Visibility `json:"visibility_level"`
 	// WebUrl 仓库 Web 地址。Repository web URL.
 	WebUrl string `json:"web_url"`
 }
@@ -2198,13 +2198,13 @@ type Repos4UserBase struct {
 	// Description 仓库描述。Repository description.
 	Description string `json:"description"`
 	// DisplayModule 仓库展示模块。Repository display module.
-	DisplayModule map[string]any `json:"display_module"`
-	// Flags 仓库特性标记。Repository feature flags. 可选值: Unknown, KnowledgeBase, NPC, Skills, Wiki.
-	Flags string `json:"flags"`
+	DisplayModule RepoDisplayModule `json:"display_module"`
+	// Flags 仓库特性标记。Repository feature flags.
+	Flags Repo `json:"flags"`
 	// ForkCount Fork 数量。Fork count.
 	ForkCount int `json:"fork_count"`
 	// ForkedFromRepo 预留。Reserved.
-	ForkedFromRepo map[string]any `json:"forked_from_repo"`
+	ForkedFromRepo Slugs `json:"forked_from_repo"`
 	// Freeze 是否冻结。Whether the repository is frozen.
 	Freeze bool `json:"freeze"`
 	// Id 仓库唯一标识。Repository unique ID.
@@ -2212,13 +2212,13 @@ type Repos4UserBase struct {
 	// Language 仓库程序语言，预留。Repo language (reserved).
 	Language string `json:"language"`
 	// Languages 仓库语言。Repository language.
-	Languages map[string]any `json:"languages"`
+	Languages RepoLanguage `json:"languages"`
 	// LastUpdateNickname 最新代码更新人姓名。Latest code updater name.
 	LastUpdateNickname string `json:"last_update_nickname"`
 	// LastUpdateUsername 最新代码更新人账户名。Latest code updater username.
 	LastUpdateUsername string `json:"last_update_username"`
 	// LastUpdatedAt 最新代码更新时间。Latest code update time.
-	LastUpdatedAt map[string]any `json:"last_updated_at"`
+	LastUpdatedAt NullTime `json:"last_updated_at"`
 	// License 仓库开源协议。Repository license.
 	License string `json:"license"`
 	// MarkCount 标记数量。Mark count.
@@ -2238,23 +2238,23 @@ type Repos4UserBase struct {
 	// Path 完整仓库路径。Full repository path.
 	Path string `json:"path"`
 	// SecondLanguages 第二语言。Second language.
-	SecondLanguages map[string]any `json:"second_languages"`
+	SecondLanguages RepoLanguage `json:"second_languages"`
 	// Site 仓库主页。Repository site.
 	Site string `json:"site"`
 	// SkillScanStatus Skill 仓库扫描结论：unknown/white/suspicious/black，来自 result。Scan result.
 	SkillScanStatus string `json:"skill_scan_status"`
 	// StarCount Star 数量。Star count.
 	StarCount int `json:"star_count"`
-	// Status 仓库状态。Repository status. 可选值: 0, 1, 2.
-	Status int `json:"status"`
+	// Status 仓库状态。Repository status.
+	Status RepoStatus `json:"status"`
 	// Tags 仓库标签列表。Repository tag list.
 	Tags []map[string]any `json:"tags"`
 	// Topics 仓库主题标签。Repository topic tags.
 	Topics string `json:"topics"`
 	// UpdatedAt 更新时间。Update time.
 	UpdatedAt string `json:"updated_at"`
-	// VisibilityLevel 仓库可见性。Repository visibility level. 可选值: Private, Public, Secret.
-	VisibilityLevel string `json:"visibility_level"`
+	// VisibilityLevel 仓库可见性。Repository visibility level.
+	VisibilityLevel Visibility `json:"visibility_level"`
 	// WebUrl 仓库 Web 地址。Repository web URL.
 	WebUrl string `json:"web_url"`
 }
@@ -2370,8 +2370,8 @@ type StarUser struct {
 	Nickname string `json:"nickname"`
 	// StaredAt star 时间。Star time.
 	StaredAt string `json:"stared_at"`
-	// Type 用户类型。User type. 可选值: 0, 1, 2, 3, 4.
-	Type int `json:"type"`
+	// Type 用户类型。User type.
+	Type UserType `json:"type"`
 	// Username 用户名。Username.
 	Username string `json:"username"`
 	// Verified 认证类型。Verification type.
@@ -2397,7 +2397,7 @@ type StartBuildReq struct {
 	// Event 事件名，须为 api_trigger 或以它开头。Event name; must be api_trigger or its prefix.
 	Event *string `json:"event,omitempty"`
 	// Npc NPC 触发标识（可选）。NPC trigger marker (optional).
-	Npc map[string]any `json:"npc,omitempty"`
+	Npc *StartBuildNpc `json:"npc,omitempty"`
 	// Sha commit id ，优先级比 tag 高，默认为分支最新提交记录。Commit ID, higher priority than tag, defaults to the latest commit of the branch.
 	Sha *string `json:"sha,omitempty"`
 	// Sync 是否等待构建触发，false 立即返回 sn 和 url。Whether to wait; false returns sn and buildLogUrl now.
@@ -2509,7 +2509,7 @@ type UpdateUserInfoPayload struct {
 // UploadAssetsResponse 上传资源响应，包含资源信息、上传地址、表单参数和后续确认接口使用的令牌。 Upload assets response, including asset info, upload URL, form params and token for the confirm API.
 type UploadAssetsResponse struct {
 	// Assets 资源信息。Resource info.
-	Assets map[string]any `json:"assets"`
+	Assets Assets `json:"assets"`
 	// Form 上传表单参数。Upload form parameters.
 	Form map[string]string `json:"form"`
 	// Token 后续调用 confirm 接口用的。Token for the subsequent confirm API call.
@@ -2595,8 +2595,8 @@ type Users struct {
 	Locked bool `json:"locked"`
 	// Nickname 用户昵称。User nickname.
 	Nickname string `json:"nickname"`
-	// Type 用户类型。User type. 可选值: 0, 1, 2, 3, 4.
-	Type int `json:"type"`
+	// Type 用户类型。User type.
+	Type UserType `json:"type"`
 	// Username 用户名。Username.
 	Username string `json:"username"`
 	// Verified 认证类型。Verification type.
@@ -2671,8 +2671,8 @@ type UsersResult struct {
 	Site string `json:"site"`
 	// StarsCount 星标数。Stars count.
 	StarsCount int `json:"stars_count"`
-	// Type 用户类型。User type. 可选值: 0, 1, 2, 3, 4.
-	Type int `json:"type"`
+	// Type 用户类型。User type.
+	Type UserType `json:"type"`
 	// Username 用户名。Username.
 	Username string `json:"username"`
 	// Verified 认证类型。Verification type.
@@ -2687,8 +2687,8 @@ type UsersResult struct {
 
 // UsersWithAccessLevelInSlug 资源里面的成员以及权限，包含成员信息、权限级别、加入时间、邀请人与来源渠道。 Member and access level in resource, including member info, access level, join time, inviter and channel.
 type UsersWithAccessLevelInSlug struct {
-	// AccessLevel 成员在资源上的权限级别。Member access level on the resource. 可选值: Unknown, Guest, Reporter, Developer, Master, Owner.
-	AccessLevel string `json:"access_level"`
+	// AccessLevel 成员在资源上的权限级别。Member access level on the resource.
+	AccessLevel AccessRole `json:"access_level"`
 	// Appearance 用户外观设置（如主题 light/dark/system）。User appearance setting.
 	Appearance string `json:"appearance"`
 	// Avatar 头像地址。Avatar URL.
@@ -2704,17 +2704,17 @@ type UsersWithAccessLevelInSlug struct {
 	// Id 用户唯一标识。User unique ID.
 	Id string `json:"id"`
 	// Inviter 邀请人。Inviter.
-	Inviter map[string]any `json:"inviter"`
+	Inviter Users `json:"inviter"`
 	// JoinTime 加入时间。Join time.
 	JoinTime string `json:"join_time"`
 	// Locked 是否锁定。Whether the user is locked.
 	Locked bool `json:"locked"`
-	// MemberChannel 成员来源渠道。Member channel. 可选值: invite, direct_add, transfer, admin_add.
-	MemberChannel string `json:"member_channel"`
+	// MemberChannel 成员来源渠道。Member channel.
+	MemberChannel ChannelTypeTarget `json:"member_channel"`
 	// Nickname 用户昵称。User nickname.
 	Nickname string `json:"nickname"`
-	// Type 用户类型。User type. 可选值: 0, 1, 2, 3, 4.
-	Type int `json:"type"`
+	// Type 用户类型。User type.
+	Type UserType `json:"type"`
 	// Username 用户名。Username.
 	Username string `json:"username"`
 	// Verified 认证类型。Verification type.
@@ -2725,19 +2725,19 @@ type UsersWithAccessLevelInSlug struct {
 
 type VolumeQuotaResp struct {
 	// CiGpuInSec 云原生构建 GPU 限额，单位核秒
-	CiGpuInSec map[string]any `json:"ci_gpu_in_sec"`
+	CiGpuInSec QuotaItem `json:"ci_gpu_in_sec"`
 	// CiInSec 云原生构建 限额，单位核秒。Cloud native build quota, in core-seconds.
-	CiInSec map[string]any `json:"ci_in_sec"`
+	CiInSec QuotaItem `json:"ci_in_sec"`
 	// CreditInMilli Credit 限额，单位 milli_credit，1000 milli_credits = 1 credit
-	CreditInMilli map[string]any `json:"credit_in_milli"`
+	CreditInMilli QuotaItem `json:"credit_in_milli"`
 	// DevGpuInSec 云原生开发 GPU 限额，单位核秒
-	DevGpuInSec map[string]any `json:"dev_gpu_in_sec"`
+	DevGpuInSec QuotaItem `json:"dev_gpu_in_sec"`
 	// DevInSec 云原生开发 限额，单位核秒。Cloud native dev quota, in core-seconds.
-	DevInSec map[string]any `json:"dev_in_sec"`
+	DevInSec QuotaItem `json:"dev_in_sec"`
 	// GitInByte Git 限额，单位字节，git 仓库除了 lfs 文件的限额。Git quota in bytes, excluding LFS files.
-	GitInByte map[string]any `json:"git_in_byte"`
+	GitInByte QuotaItem `json:"git_in_byte"`
 	// ObjectInByte 对象存储 限额，单位字节，包括 git lfs、制品、release 和 commit 附件等
-	ObjectInByte map[string]any `json:"object_in_byte"`
+	ObjectInByte QuotaItem `json:"object_in_byte"`
 }
 
 type VolumeUsedResp struct {
@@ -2845,7 +2845,7 @@ type WorkspaceListResult struct {
 	// List 云原生开发环境列表。Cloud native dev environment list.
 	List []WorkspaceInfo `json:"list"`
 	// PageInfo 分页信息。Pagination info.
-	PageInfo map[string]any `json:"pageInfo"`
+	PageInfo WorkspacePageInfo `json:"pageInfo"`
 	// Total 总数。Total.
 	Total int `json:"total"`
 }
