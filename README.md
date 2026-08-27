@@ -372,8 +372,11 @@ git clone https://github.com/zy84338719/go-cnb.cool
 cd go-cnb.cool
 
 golangci-lint run ./...    # lint (CI 同款)
-go test -race ./...        # 35 个测试: 路由表全量回归 + 边界行为
+go test -race ./...        # 38+ 测试: 路由表全量回归 + 正例解码 + 边界行为
 go run ./examples/basic    # 需要环境变量 CNB_TOKEN
+
+# 真实 API 集成测试 (不设 CNB_TOKEN 自动跳过)
+CNB_TOKEN=你的访问令牌 go test -run Integration -v .
 ```
 
 SDK 由 [`internal/gen/generate.py`](internal/gen/generate.py) 从官方 swagger.json 全量生成(spec 快照入库)。CNB 更新接口后:
