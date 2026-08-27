@@ -1,11 +1,24 @@
-# go-cnb
+# go-cnb.cool — CNB OpenAPI Go SDK
 
-[CNB](https://cnb.cool) (云原生构建 / Cloud Native Build) OpenAPI 的 Go SDK。
-全量覆盖 `https://api.cnb.cool` 公开接口 — **259 个操作、31 个服务分组、318 个数据模型**，纯标准库实现，零第三方依赖。
+[![CI](https://github.com/zy84338719/go-cnb.cool/actions/workflows/ci.yml/badge.svg)](https://github.com/zy84338719/go-cnb.cool/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/zy84338719/go-cnb.cool.svg)](https://pkg.go.dev/github.com/zy84338719/go-cnb.cool)
+[![Go Version](https://img.shields.io/badge/go-1.22%2B-00ADD8?logo=go&logoColor=white)](go.mod)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-- API 文档: <https://api.cnb.cool> (spec: <https://api.cnb.cool/swagger.json>)
-- OpenAPI 使用说明: <https://docs.cnb.cool/zh/develops/openapi.html>
-- 访问令牌: <https://docs.cnb.cool/zh/develops/access-token.html>
+[CNB](https://cnb.cool)(云原生构建 / Cloud Native Build)OpenAPI 的 Go SDK。
+
+**全量覆盖 [api.cnb.cool](https://api.cnb.cool) 公开接口 — 259 个操作、31 个服务分组、318 个数据模型**，由官方 [swagger.json](https://api.cnb.cool/swagger.json) 全自动生成，纯标准库实现，**零第三方依赖**。
+
+## 特性
+
+- 🛰️ **全量覆盖** — Issue / PR / Git 数据 / 仓库与组织 / 构建流水线 / 制品库 / 任务集 / 工作区 / AI / 知识库……全部 259 个接口
+- 📦 **零依赖** — 只用 Go 标准库，`go get` 即用，无供应链负担
+- 🔒 **类型安全** — 318 个数据模型、14 个枚举(`Visibility` / `AccessRole` / `RepoStatus` …)全部生成为具名类型
+- 🧭 **地道 API** — go-github 风格:`ctx` 贯穿、`(结果, *Response, error)` 三返回值、`client.Issues.ListIssues(...)` 服务分组
+- 🛡️ **PATCH 语义安全** — 请求体/查询参数字段全部指针 + `omitempty`，nil 不发送，绝不误清字段
+- 📄 **结构化错误** — 解析 CNB 错误体 `{"errcode","errmsg","errparam"}` 为 `*ErrorResponse`，带 `IsNotFound()` 等判断
+- 📑 **泛型分页** — `cnb.EachPage` 逐页遍历任意列表接口
+- ♻️ **可持续更新** — spec 快照 + 生成器入库，一条命令重新生成，CI 自动校验生成代码与 spec 同步
 
 ## 安装
 
@@ -13,7 +26,7 @@
 go get github.com/zy84338719/go-cnb.cool
 ```
 
-包名是 `cnb`，导入时加个别名即可：
+包名是 `cnb`，导入时加个别名：
 
 ```go
 import cnb "github.com/zy84338719/go-cnb.cool"
@@ -31,64 +44,75 @@ import (
 )
 
 func main() {
-    client, err := cnb.NewClient("你的访问令牌") // 创建: https://docs.cnb.cool/zh/develops/access-token.html
+    // 访问令牌: https://docs.cnb.cool/zh/develops/access-token.html
+    client, err := cnb.NewClient("你的访问令牌")
     if err != nil {
         panic(err)
     }
     ctx := context.Background()
 
-    // 我的信息
-    me, _, err := client.Users.GetUserInfo(ctx)
+    // 当前用户
+    me, _, _ := client.Users.GetUserInfo(ctx)
+    println(me.Username)
 
-    // 组织列表 (查询参数)
+    // 顶层组织列表 (查询参数)
     groups, _, _ := client.Organizations.ListTopGroups(ctx, &cnb.ListTopGroupsOptions{
         ListOptions: cnb.ListOptions{Page: 1, PageSize: 10},
+        Role:        cnb.Ptr("Owner"), // 可选值见字段注释
     })
 
-    // 仓库 Issue
-    issues, _, _ := client.Issues.ListIssues(ctx, "cnb/awesome-cnb", &cnb.ListIssuesOptions{
-        State:   cnb.Ptr("open"),
-        Keyword: cnb.Ptr("docker"),
+    // 查询仓库 Issue
+    issues, _, _ := client.Issues.ListIssues(ctx, "org/repo", &cnb.ListIssuesOptions{
+        ListOptions: cnb.ListOptions{PageSize: 20},
+        State:       cnb.Ptr("open"),
+        Labels:      cnb.Ptr("bug,feature"),
     })
+    _ = issues
 
-    // 创建 Issue (请求体字段是指针, nil 即不发送, PATCH 语义安全)
+    // 创建 Issue (表单字段是指针: nil 不发送)
     issue, _, _ := client.Issues.CreateIssue(ctx, "org/repo", cnb.PostIssueForm{
-        Title:   cnb.Ptr("标题"),
-        Body:    cnb.Ptr("内容"),
-        Labels:  []string{"bug"},
+        Title:  cnb.Ptr("SDK 上线啦"),
+        Labels: []string{"announce"},
     })
+    _ = issue
 
-    // 合并 PR
+    // 合并 PR (squash)
     merged, _, _ := client.Pulls.MergePull(ctx, "org/repo", "12", cnb.MergePullRequest{
         MergeStyle: cnb.Ptr("squash"),
     })
+    _ = merged
 }
 ```
 
-完整示例见 [`examples/basic`](examples/basic)。
+完整可运行示例见 [`examples/basic`](examples/basic/main.go)。
 
-## 服务分组
+## 服务总览
 
-| Client 字段 | 覆盖范围 |
-|---|---|
-| `Issues` / `Pulls` | Issue / 合并请求: 增删改查、评论、标签、处理人、评审、合并、动态 |
-| `Git` | 分支/标签/提交/对比/Blame 原始内容、blob 创建、commit 注解、归档下载、LFS 预签名 |
-| `Repositories` / `Organizations` | 仓库/组织: 创建、设置、转移、归档、fork、置顶 |
-| `Members` / `Collaborators`(并入 Members) | 成员管理、权限级别、外部协作者 |
-| `Releases` | Release 与附件 (含预签名上传两段式接口) |
-| `GitSettings` | 分支保护、云原生构建、PR、推送限制设置 |
-| `Build` | 流水线构建: 触发、状态、日志、AI 审计、定时同步 |
-| `Registries` | 制品库: 包/标签查询删除、provenance |
-| `Missions` / `MissionResources` | 任务集与任务资源 |
-| `KnowledgeBase` / `AI` | 知识库、AI 对话 |
-| `Users` / `Followers` / `Starring` | 用户信息、邮箱、GPG、关注、星标 |
-| `Workspace` | 云开发工作区 |
-| `Activities` / `Events` / `Rank` / `Search` | 动态、仓库事件、榜单、公开仓库搜索 |
-| `Assets` / `Badge` / `Labels` / `Charge` / `Security` / `ArtifactSecurity` / `NpcObservability` / `RepoCodeIssue` / `RepoContributor` | 附件、徽章、标签、配额、安全概览等 |
+| Client 字段 | 方法数 | 覆盖范围 |
+|---|---:|---|
+| `Git` | 35 | 分支/标签/提交/对比/原始内容/blob/commit 注解/归档下载/分支锁/LFS 预签名 |
+| `Pulls` | 34 | 合并请求全生命周期: 增删改查、评论、标签、处理人、评审、合并、commit 状态 |
+| `Issues` | 32 | Issue 及评论/标签/处理人/属性、动态、附件上传两段式接口 |
+| `Members` | 20 | 组织/仓库/任务集成员管理、权限级别、外部协作者 |
+| `Repositories` | 14 | 仓库创建/更新/转移/归档、fork、置顶、公开搜索外的仓库列表 |
+| `Releases` | 13 | Release 与附件 (含预签名上传两段式接口) |
+| `Organizations` | 12 | 组织创建/更新/转移/删除、子组织、logo 上传、组织设置 |
+| `Build` | 11 | 云原生构建: 触发/停止/状态/日志/AI 审计/定时同步 |
+| `GitSettings` | 11 | 分支保护、云原生构建设置、PR 设置、推送限制 |
+| `Registries` | 10 | 制品库: 包/标签查询删除、描述更新、provenance |
+| `Missions` | 8 | 任务集: 视图配置、视图列表、创建/删除 |
+| `Users` | 6 | 用户信息、邮箱、GPG 密钥、自动补全 |
+| `KnowledgeBase` | 6 | 知识库信息/查询/删除、embedding 模型 |
+| `Workspace` | 5 | 云开发工作区: 启动/停止/删除/列表/详情 |
+| `Rank` | 5 | 仓库榜单 (日/周/月/年) 与语言列表 |
+| `Activities` / `Assets` / `Charge` / `Labels` | 4×4 | 用户动态与贡献者、附件资源、配额用量、仓库标签 |
+| `Starring` / `Badge` / `NpcObservability` | 3×3 | 星标、徽章、NPC 可观测性 |
+| `Followers` / `MissionResources` / `RepoCodeIssue` | 2×3 | 关注列表、任务资源、代码 Issue |
+| `Events` / `Search` / `Security` / `ArtifactSecurity` / `RepoContributor` / `AI` | 1×6 | 仓库事件、公开仓库搜索、安全概览、制品扫描、贡献者趋势、AI 对话 |
 
 ## 分页
 
-CNB 分页参数为 `page` (从 1 起) / `page_size` (默认 10, 上限 100)，响应为裸数组、不返回总数。所有列表类 Options 都内嵌 `cnb.ListOptions`，可用 `cnb.EachPage` 逐页遍历：
+CNB 分页参数为 `page`(从 1 起)/ `page_size`(默认 10,上限 100)，响应为裸数组、不返回总数。所有列表类 Options 内嵌 `cnb.ListOptions`，用 `cnb.EachPage` 逐页遍历：
 
 ```go
 opts := &cnb.ListPullsOptions{ListOptions: cnb.ListOptions{PageSize: 100}}
@@ -97,28 +121,35 @@ err := cnb.EachPage(100, func(page int) ([]*cnb.PullRequest, error) {
     prs, _, err := client.Pulls.ListPulls(ctx, "org/repo", opts)
     return prs, err
 }, func(prs []*cnb.PullRequest) error {
-    // 处理每一页
+    for _, pr := range prs {
+        println(pr.Title)
+    }
     return nil
 })
 ```
 
 ## 错误处理
 
-非 2xx/3xx 响应返回 `*cnb.ErrorResponse`（CNB 错误体 `{"errcode":..,"errmsg":..,"errparam":{..}}`）：
+非 2xx/3xx 响应返回 `*cnb.ErrorResponse`(对应 CNB 错误体 `{"errcode":..,"errmsg":..,"errparam":{..}}`):
 
 ```go
 issue, _, err := client.Issues.GetIssue(ctx, "org/repo", 42)
 if err != nil {
     var apiErr *cnb.ErrorResponse
-    if cnb.AsErrorResponse(err, &apiErr) && apiErr.IsNotFound() {
-        // 不存在
+    if cnb.AsErrorResponse(err, &apiErr) {
+        switch {
+        case apiErr.IsNotFound():     // 404
+        case apiErr.IsUnauthorized(): // 401, 令牌无效
+        case apiErr.IsForbidden():    // 403, 权限不足
+        }
+        log.Printf("errcode=%d errmsg=%s param=%v", apiErr.ErrCode, apiErr.ErrMsg, apiErr.ErrParam)
     }
 }
 ```
 
-## 文件/归档下载
+## 文件与归档下载
 
-无 JSON schema 的接口（归档、原始文件、图片、构建日志、LFS/Release 预签名等）返回 `*Response`，响应体已缓冲，直接读 `resp.Body`：
+无 JSON schema 的接口(归档、原始文件、图片、构建日志、Release/commit 附件、LFS 预签名)返回 `*Response`，响应体已缓冲、可重复读:
 
 ```go
 // ref_with_path 支持: 分支名 / 标签名 / 提交哈希 / 分支名/文件路径 等
@@ -127,25 +158,33 @@ if err != nil { panic(err) }
 data, _ := io.ReadAll(resp.Body) // tar/zip 归档内容
 ```
 
+> 302 预签名下载由 `http.Client` 自动跟随、直接拿到内容；需要 URL 本身时可用 `cnb.WithHTTPClient` 注入关闭重定向的 client。
+
 ## 注意事项
 
-- **Issue / PR 路径参数 `number` 为 int**（spec 如此定义），但返回模型里的 `Number` 字段是 string —— CNB API 自身如此，SDK 原样保留。
-- 请求体 (Form) 与查询参数 (Options) 字段均为指针 + `omitempty`：`nil` 不发送，空串/0/false 会发送。
-- 枚举（`Visibility`、`AccessRole`、`RepoStatus` 等 14 个）生成为具名类型和常量。
-- 302 预签名下载（Release 附件、commit 附件、LFS）由 `http.Client` 自动跟随后直接得到内容；需要 URL 本身时请自行用 `WithHTTPClient` 关闭重定向。
+- **Issue/PR 路径参数 `number` 为 int**(spec 如此定义)，但返回模型里的 `Number` 字段是 string —— CNB API 自身如此，SDK 原样保留。
+- 请求体(Form)与查询参数(Options)字段均为指针 + `omitempty`: `nil` 不发送，空串/0/false 会发送。
+- 响应模型中的枚举字段是具名类型(如 `OrganizationAccess.AccessRole` 为 `cnb.AccessRole`)，常量形如 `cnb.AccessRoleOwner`、`cnb.VisibilityPublic`;查询参数里的枚举值(如 `Role`)是 `*string`，直接传字符串。
 
 ## 重新生成
 
-SDK 由 `internal/gen/generate.py` 从官方 swagger.json 全量生成：
+SDK 由 [`internal/gen/generate.py`](internal/gen/generate.py) 从官方 swagger.json 全量生成，CI 会自动校验生成代码与 spec 同步:
 
 ```bash
-# 更新 spec 后重新生成 (生成文件带 DO NOT EDIT 头)
+# 更新 API 覆盖: 重新下载 spec 后重新生成
 python3 internal/gen/generate.py
 go build ./... && go test ./...
 ```
 
-手写文件：`cnb.go`（Client 核心逻辑）、`errors.go`、`params.go`、`pagination.go`、`util.go`、测试与示例。
+生成文件(`*_gen.go`, 带 DO NOT EDIT 头)与手写文件(`cnb.go` / `errors.go` / `params.go` / `pagination.go` / `util.go` / 测试 / 示例)分工见 [AGENTS.md](AGENTS.md)。
+
+## 开发
+
+```bash
+go build ./... && go vet ./... && go test ./...   # 本地跑 CI 同款检查
+go run ./examples/basic                            # 需要 CNB_TOKEN 环境变量
+```
 
 ## License
 
-MIT
+[MIT](LICENSE)

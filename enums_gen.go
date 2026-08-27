@@ -5,18 +5,18 @@ package cnb
 type AccessRole string
 
 const (
-	// Anonymous Anonymous 匿名
-	Anonymous AccessRole = "Unknown"
-	// Guest Guest 访客
-	Guest AccessRole = "Guest"
-	// REPORTER REPORTER 助手
-	REPORTER AccessRole = "Reporter"
-	// DEVELOPER DEVELOPER 开发
-	DEVELOPER AccessRole = "Developer"
-	// MASTER MASTER 管理
-	MASTER AccessRole = "Master"
-	// OWNER OWNER 负责人
-	OWNER AccessRole = "Owner"
+	// AccessRoleAnonymous Anonymous 匿名
+	AccessRoleAnonymous AccessRole = "Unknown"
+	// AccessRoleGuest Guest 访客
+	AccessRoleGuest AccessRole = "Guest"
+	// AccessRoleReporter REPORTER 助手
+	AccessRoleReporter AccessRole = "Reporter"
+	// AccessRoleDeveloper DEVELOPER 开发
+	AccessRoleDeveloper AccessRole = "Developer"
+	// AccessRoleMaster MASTER 管理
+	AccessRoleMaster AccessRole = "Master"
+	// AccessRoleOwner OWNER 负责人
+	AccessRoleOwner AccessRole = "Owner"
 )
 
 type RepoStatus int
@@ -48,16 +48,16 @@ const (
 type UserType int
 
 const (
-	// WeChatUser WeChatUser 微信用户
-	WeChatUser UserType = 0
-	// OauthUser OauthUser oauth 授权用户
-	OauthUser UserType = 1
-	// TestUser TestUser 测试用户
-	TestUser UserType = 2
-	// RobotUser RobotUser 助手用户
-	RobotUser UserType = 3
-	// IoaUser IoaUser ioa 用户
-	IoaUser UserType = 4
+	// UserTypeWeChatUser WeChatUser 微信用户
+	UserTypeWeChatUser UserType = 0
+	// UserTypeOauthUser OauthUser oauth 授权用户
+	UserTypeOauthUser UserType = 1
+	// UserTypeTestUser TestUser 测试用户
+	UserTypeTestUser UserType = 2
+	// UserTypeRobotUser RobotUser 助手用户
+	UserTypeRobotUser UserType = 3
+	// UserTypeIoaUser IoaUser ioa 用户
+	UserTypeIoaUser UserType = 4
 )
 
 type Visibility string
@@ -74,24 +74,24 @@ const (
 type AssetRecordType string
 
 const (
-	// AssetSlugImg AssetSlugImg issue/pr 图片
-	AssetSlugImg AssetRecordType = "slug_img"
-	// AssetSlugFile AssetSlugFile issue/pr 附件
-	AssetSlugFile AssetRecordType = "slug_file"
-	// AssetRepoRelease AssetRepoRelease release 附件
-	AssetRepoRelease AssetRecordType = "repo_release"
-	// AssetRepoCommit AssetRepoCommit commit 附件
-	AssetRepoCommit AssetRecordType = "repo_commit"
-	// AssetIssueImg AssetIssueImg issue 图片
-	AssetIssueImg AssetRecordType = "issue_img"
-	// AssetIssueFile AssetIssueFile issue 附件
-	AssetIssueFile AssetRecordType = "issue_file"
-	// AssetPullImg AssetPullImg pr 图片
-	AssetPullImg AssetRecordType = "pull_img"
-	// AssetPullFile AssetPullFile pr 附件
-	AssetPullFile AssetRecordType = "pull_file"
-	// AssetUnknown AssetUnknown ...
-	AssetUnknown AssetRecordType = "unknown"
+	// AssetRecordTypeSlugImg AssetSlugImg issue/pr 图片
+	AssetRecordTypeSlugImg AssetRecordType = "slug_img"
+	// AssetRecordTypeSlugFile AssetSlugFile issue/pr 附件
+	AssetRecordTypeSlugFile AssetRecordType = "slug_file"
+	// AssetRecordTypeRepoRelease AssetRepoRelease release 附件
+	AssetRecordTypeRepoRelease AssetRecordType = "repo_release"
+	// AssetRecordTypeRepoCommit AssetRepoCommit commit 附件
+	AssetRecordTypeRepoCommit AssetRecordType = "repo_commit"
+	// AssetRecordTypeIssueImg AssetIssueImg issue 图片
+	AssetRecordTypeIssueImg AssetRecordType = "issue_img"
+	// AssetRecordTypeIssueFile AssetIssueFile issue 附件
+	AssetRecordTypeIssueFile AssetRecordType = "issue_file"
+	// AssetRecordTypePullImg AssetPullImg pr 图片
+	AssetRecordTypePullImg AssetRecordType = "pull_img"
+	// AssetRecordTypePullFile AssetPullFile pr 附件
+	AssetRecordTypePullFile AssetRecordType = "pull_file"
+	// AssetRecordTypeUnknown AssetUnknown ...
+	AssetRecordTypeUnknown AssetRecordType = "unknown"
 )
 
 type InteractionType string
@@ -131,8 +131,8 @@ const (
 	OperatorTypeNotEqual OperatorType = "not_equals"
 	// OperatorTypeContains OperatorTypeContains ...
 	OperatorTypeContains OperatorType = "contains"
-	// OperationTypeContainsAll OperationTypeContainsAll ...
-	OperationTypeContainsAll OperatorType = "contains_all"
+	// OperatorTypeOperationTypeContainsAll OperationTypeContainsAll ...
+	OperatorTypeOperationTypeContainsAll OperatorType = "contains_all"
 	// OperatorTypeNotContains OperatorTypeNotContains ...
 	OperatorTypeNotContains OperatorType = "not_contains"
 	// OperatorTypeEmpty OperatorTypeEmpty ...
@@ -184,85 +184,85 @@ const (
 type Repo string
 
 const (
-	// Unknown Unknown 未知
-	Unknown Repo = "Unknown"
-	// KnowledgeBase KnowledgeBase 知识库
-	KnowledgeBase Repo = "KnowledgeBase"
-	// NPC NPC NPC
-	NPC Repo = "NPC"
-	// Skills Skills 技能
-	Skills Repo = "Skills"
-	// Wiki Wiki Wiki
-	Wiki Repo = "Wiki"
+	// RepoUnknown Unknown 未知
+	RepoUnknown Repo = "Unknown"
+	// RepoKnowledgeBase KnowledgeBase 知识库
+	RepoKnowledgeBase Repo = "KnowledgeBase"
+	// RepoNpc NPC NPC
+	RepoNpc Repo = "NPC"
+	// RepoSkills Skills 技能
+	RepoSkills Repo = "Skills"
+	// RepoWiki Wiki Wiki
+	RepoWiki Repo = "Wiki"
 )
 
 type ChannelTypeTarget string
 
 const (
-	ChannelTypeInvite    ChannelTypeTarget = "invite"
-	ChannelTypeDirectAdd ChannelTypeTarget = "direct_add"
-	ChannelTypeTransfer  ChannelTypeTarget = "transfer"
-	ChannelTypeAdminAdd  ChannelTypeTarget = "admin_add"
+	ChannelTypeTargetInvite    ChannelTypeTarget = "invite"
+	ChannelTypeTargetDirectAdd ChannelTypeTarget = "direct_add"
+	ChannelTypeTargetTransfer  ChannelTypeTarget = "transfer"
+	ChannelTypeTargetAdminAdd  ChannelTypeTarget = "admin_add"
 )
 
 // SettingValue 配置值，内容为枚举的组合，英文逗号分割 Configuration value. Content is a combination of enum values, separated by commas.
 type SettingValue string
 
 const (
-	// DisableOrganizationReadme DisableOrganizationReadme 是否关闭组织介绍页, 以组织设置为准
-	DisableOrganizationReadme SettingValue = "disable_organization_readme"
-	// CloudNativeDevOnly CloudNativeDevOnly 仅可使用云原生开发, 以组织设置为准
-	CloudNativeDevOnly SettingValue = "cloud_native_dev_only"
-	// UseRootGroupBranchProtectionOnly UseRootGroupBranchProtectionOnly 支持重写分支保护规则，打开时，如果保护分支规则存在差异，可以覆盖根组织的规则
-	UseRootGroupBranchProtectionOnly SettingValue = "user_root_group_branch_protection_only"
-	// ForbidRedefineBranchProtection ForbidRedefineBranchProtection 打开后，禁止仓库修改保护分支规则，以根组织设置为准
-	ForbidRedefineBranchProtection SettingValue = "forbid_redefine_branch_protection"
-	// EnableTAPDAccess EnableTAPDAccess 打开后，允许 TAPD 访问组织下的资源, 以组织设置为准
-	EnableTAPDAccess SettingValue = "enable_tapd_access"
-	// EnableShowPrivateMissionWaterMark EnableShowPrivateMissionWaterMark 打开后，私有任务集会显示水印
-	EnableShowPrivateMissionWaterMark SettingValue = "enable_show_private_mission_water_mark"
-	// PreventOrganizationCreation PreventOrganizationCreation 禁止创建组织
-	PreventOrganizationCreation SettingValue = "prevent_organization_creation"
-	// PreventRepositoryCreation PreventRepositoryCreation 禁止创建仓库
-	PreventRepositoryCreation SettingValue = "prevent_repository_creation"
-	// PreventMissionCreation PreventMissionCreation 禁止创建任务集
-	PreventMissionCreation SettingValue = "prevent_mission_creation"
-	// PreventRegistryCreation PreventRegistryCreation 禁止创建制品库
-	PreventRegistryCreation SettingValue = "prevent_registry_creation"
-	// DisableInvitation DisableInvitation 禁止邀请成员
-	DisableInvitation SettingValue = "disable_invitation"
-	// PreventVisibilityModification PreventVisibilityModification 禁止修改资源可见性
-	PreventVisibilityModification SettingValue = "prevent_visibility_modification"
-	// PreventResourceDeletion PreventResourceDeletion 禁止删除资源
-	PreventResourceDeletion SettingValue = "prevent_resource_deletion"
-	// PreventRepositoryArchival PreventRepositoryArchival 禁止归档仓库
-	PreventRepositoryArchival SettingValue = "prevent_repository_archival"
-	// PreventOrganizationTransfer PreventOrganizationTransfer 禁止转移组织
-	PreventOrganizationTransfer SettingValue = "prevent_organization_transfer"
-	// PreventRepositoryTransfer PreventRepositoryTransfer 禁止转移仓库
-	PreventRepositoryTransfer SettingValue = "prevent_repository_transfer"
-	// PreventMissionTransfer PreventMissionTransfer 禁止转移任务集
-	PreventMissionTransfer SettingValue = "prevent_mission_transfer"
-	// PreventRegistryTransfer PreventRegistryTransfer 禁止转移制品库
-	PreventRegistryTransfer SettingValue = "prevent_registry_transfer"
-	// UseGroupGitQuota UseGroupGitQuota 是否使用组织的仓库配额
-	UseGroupGitQuota SettingValue = "use_group_git_quota"
-	// UseGroupGitObjectLimit UseGroupGitObjectLimit 是否使用组织的仓库对象限制
-	UseGroupGitObjectLimit SettingValue = "use_group_git_object_limit"
-	// EnableAddMemberOnlyRoot enableAddMemberOnlyRoot 开启后, 仅根组织管理员和负责人可添加成员加入根组织下所有子组织和仓库
-	EnableAddMemberOnlyRoot SettingValue = "enable_add_member_only_root"
-	// UseRootGroupGitPushLimit UseRootGroupGitPushLimit 开启根组织推送管控选项
-	UseRootGroupGitPushLimit SettingValue = "use_root_group_git_push_limit"
-	// EnableAddMember enableAddMember 开启后, 允许子组织管理员和负责人添加成员到其负责的组织/仓库/制品库/任务集
-	EnableAddMember SettingValue = "enable_add_member"
-	// EnableChangeMemberRoleOnlyRoot enableChangeMemberRoleOnlyRoot 开启后, 仅根组织管理员和负责人可修改成员角色
-	EnableChangeMemberRoleOnlyRoot SettingValue = "enable_change_member_role_only_root"
-	// EnableOtherGroupNPCAddComment enableOtherGroupNPCAddComment 开启后, 允许其他根组织的npc在根组织内增加评论
-	EnableOtherGroupNPCAddComment SettingValue = "enable_other_group_npc_add_comment"
-	// DisableInviteAuthControl disableInviteAuthControl 关闭邀请认证管控
-	DisableInviteAuthControl SettingValue = "disable_invite_auth_control"
-	// OnlyRepoMemberCanMentionNPC onlyRepoMemberCanMentionNPC 开启后, 外部用户无法@NPC, 仅组织成员（含外部协作者）可@
-	OnlyRepoMemberCanMentionNPC SettingValue = "only_repo_member_can_mention_npc"
-	// AllowNpcCrossRepo allowNpcCrossRepo 开启后，NPC 不再局限于当前仓库，可以在根组织下的所有仓库之间自由协作，自动处理跨仓任务。
-	AllowNpcCrossRepo SettingValue = "allow_npc_cross_repo"
+	// SettingValueDisableOrganizationReadme DisableOrganizationReadme 是否关闭组织介绍页, 以组织设置为准
+	SettingValueDisableOrganizationReadme SettingValue = "disable_organization_readme"
+	// SettingValueCloudNativeDevOnly CloudNativeDevOnly 仅可使用云原生开发, 以组织设置为准
+	SettingValueCloudNativeDevOnly SettingValue = "cloud_native_dev_only"
+	// SettingValueUseRootGroupBranchProtectionOnly UseRootGroupBranchProtectionOnly 支持重写分支保护规则，打开时，如果保护分支规则存在差异，可以覆盖根组织的规则
+	SettingValueUseRootGroupBranchProtectionOnly SettingValue = "user_root_group_branch_protection_only"
+	// SettingValueForbidRedefineBranchProtection ForbidRedefineBranchProtection 打开后，禁止仓库修改保护分支规则，以根组织设置为准
+	SettingValueForbidRedefineBranchProtection SettingValue = "forbid_redefine_branch_protection"
+	// SettingValueEnableTAPDAccess EnableTAPDAccess 打开后，允许 TAPD 访问组织下的资源, 以组织设置为准
+	SettingValueEnableTAPDAccess SettingValue = "enable_tapd_access"
+	// SettingValueEnableShowPrivateMissionWaterMark EnableShowPrivateMissionWaterMark 打开后，私有任务集会显示水印
+	SettingValueEnableShowPrivateMissionWaterMark SettingValue = "enable_show_private_mission_water_mark"
+	// SettingValuePreventOrganizationCreation PreventOrganizationCreation 禁止创建组织
+	SettingValuePreventOrganizationCreation SettingValue = "prevent_organization_creation"
+	// SettingValuePreventRepositoryCreation PreventRepositoryCreation 禁止创建仓库
+	SettingValuePreventRepositoryCreation SettingValue = "prevent_repository_creation"
+	// SettingValuePreventMissionCreation PreventMissionCreation 禁止创建任务集
+	SettingValuePreventMissionCreation SettingValue = "prevent_mission_creation"
+	// SettingValuePreventRegistryCreation PreventRegistryCreation 禁止创建制品库
+	SettingValuePreventRegistryCreation SettingValue = "prevent_registry_creation"
+	// SettingValueDisableInvitation DisableInvitation 禁止邀请成员
+	SettingValueDisableInvitation SettingValue = "disable_invitation"
+	// SettingValuePreventVisibilityModification PreventVisibilityModification 禁止修改资源可见性
+	SettingValuePreventVisibilityModification SettingValue = "prevent_visibility_modification"
+	// SettingValuePreventResourceDeletion PreventResourceDeletion 禁止删除资源
+	SettingValuePreventResourceDeletion SettingValue = "prevent_resource_deletion"
+	// SettingValuePreventRepositoryArchival PreventRepositoryArchival 禁止归档仓库
+	SettingValuePreventRepositoryArchival SettingValue = "prevent_repository_archival"
+	// SettingValuePreventOrganizationTransfer PreventOrganizationTransfer 禁止转移组织
+	SettingValuePreventOrganizationTransfer SettingValue = "prevent_organization_transfer"
+	// SettingValuePreventRepositoryTransfer PreventRepositoryTransfer 禁止转移仓库
+	SettingValuePreventRepositoryTransfer SettingValue = "prevent_repository_transfer"
+	// SettingValuePreventMissionTransfer PreventMissionTransfer 禁止转移任务集
+	SettingValuePreventMissionTransfer SettingValue = "prevent_mission_transfer"
+	// SettingValuePreventRegistryTransfer PreventRegistryTransfer 禁止转移制品库
+	SettingValuePreventRegistryTransfer SettingValue = "prevent_registry_transfer"
+	// SettingValueUseGroupGitQuota UseGroupGitQuota 是否使用组织的仓库配额
+	SettingValueUseGroupGitQuota SettingValue = "use_group_git_quota"
+	// SettingValueUseGroupGitObjectLimit UseGroupGitObjectLimit 是否使用组织的仓库对象限制
+	SettingValueUseGroupGitObjectLimit SettingValue = "use_group_git_object_limit"
+	// SettingValueEnableAddMemberOnlyRoot enableAddMemberOnlyRoot 开启后, 仅根组织管理员和负责人可添加成员加入根组织下所有子组织和仓库
+	SettingValueEnableAddMemberOnlyRoot SettingValue = "enable_add_member_only_root"
+	// SettingValueUseRootGroupGitPushLimit UseRootGroupGitPushLimit 开启根组织推送管控选项
+	SettingValueUseRootGroupGitPushLimit SettingValue = "use_root_group_git_push_limit"
+	// SettingValueEnableAddMember enableAddMember 开启后, 允许子组织管理员和负责人添加成员到其负责的组织/仓库/制品库/任务集
+	SettingValueEnableAddMember SettingValue = "enable_add_member"
+	// SettingValueEnableChangeMemberRoleOnlyRoot enableChangeMemberRoleOnlyRoot 开启后, 仅根组织管理员和负责人可修改成员角色
+	SettingValueEnableChangeMemberRoleOnlyRoot SettingValue = "enable_change_member_role_only_root"
+	// SettingValueEnableOtherGroupNPCAddComment enableOtherGroupNPCAddComment 开启后, 允许其他根组织的npc在根组织内增加评论
+	SettingValueEnableOtherGroupNPCAddComment SettingValue = "enable_other_group_npc_add_comment"
+	// SettingValueDisableInviteAuthControl disableInviteAuthControl 关闭邀请认证管控
+	SettingValueDisableInviteAuthControl SettingValue = "disable_invite_auth_control"
+	// SettingValueOnlyRepoMemberCanMentionNPC onlyRepoMemberCanMentionNPC 开启后, 外部用户无法@NPC, 仅组织成员（含外部协作者）可@
+	SettingValueOnlyRepoMemberCanMentionNPC SettingValue = "only_repo_member_can_mention_npc"
+	// SettingValueAllowNpcCrossRepo allowNpcCrossRepo 开启后，NPC 不再局限于当前仓库，可以在根组织下的所有仓库之间自由协作，自动处理跨仓任务。
+	SettingValueAllowNpcCrossRepo SettingValue = "allow_npc_cross_repo"
 )

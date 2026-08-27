@@ -48,6 +48,40 @@ def pascal(s: str) -> str:
     return "".join(p[:1].upper() + p[1:] for p in parts) or "X"
 
 
+def fix_shout(s: str) -> str:
+    """全大写标识符转首字母大写: REPORTER -> Reporter."""
+    if len(s) > 1 and s.isupper():
+        return s[0] + s[1:].lower()
+    return s
+
+
+_CAMEL_RE = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z][a-z0-9]*|[a-z0-9]+")
+
+
+def camel_split(s: str) -> list:
+    return _CAMEL_RE.findall(s)
+
+
+def merge_type_const(type_name: str, varname: str) -> str:
+    """生成 '类型名+成员名' 常量名, 剥离 varname 与类型名的驼峰公共前缀.
+
+    例: (ChannelTypeTarget, ChannelTypeInvite) -> ChannelTypeTargetInvite
+        (AssetRecordType, AssetSlugImg)         -> AssetRecordTypeSlugImg
+    """
+    t_segs = camel_split(type_name)
+    v_segs = camel_split(varname)
+    common = 0
+    for a, b in zip(t_segs, v_segs):
+        if a.lower() == b.lower():
+            common += 1
+        else:
+            break
+    rest = "".join(v_segs[common:])
+    if rest:
+        return type_name + rest[:1].upper() + rest[1:]
+    return type_name
+
+
 def camel(s: str) -> str:
     p = pascal(s)
     return p[:1].lower() + p[1:]
@@ -302,9 +336,12 @@ def gen_enum(defname: str) -> list:
     lines.append("const (")
     for i, v in enumerate(values):
         if i < len(varnames):
-            cname = pascal(varnames[i])
+            cname = fix_shout(pascal(varnames[i]))
+            # 统一加类型前缀, 剥离公共驼峰前缀, 避免裸名/双重前缀常量
+            if not cname.startswith(name):
+                cname = merge_type_const(name, cname)
         elif not is_int:
-            cname = pascal(str(v))
+            cname = name + pascal(str(v))
         else:
             cname = f"{name}{i}"
         desc = ""

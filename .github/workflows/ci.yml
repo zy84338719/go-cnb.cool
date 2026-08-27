@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (Go ${{ matrix.go }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go: ['1.22.x', 'stable']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          cache: false
+
+      - name: Check formatting
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::以下文件未通过 gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./... -count=1
+
+  generator-check:
+    name: Generated code in sync with swagger.json
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go (gofmt)
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
+
+      - name: Regenerate SDK from internal/gen/swagger.json
+        run: python3 internal/gen/generate.py
+
+      - name: Ensure generated files unchanged
+        run: |
+          if ! git diff --exit-code -- '*_gen.go'; then
+            echo "::error::生成代码与 swagger.json 不同步, 请在本地运行 python3 internal/gen/generate.py 并提交"
+            git diff --stat -- '*_gen.go'
+            exit 1
+          fi
+
+      - name: Build regenerated code
+        run: go build ./... && go vet ./...
