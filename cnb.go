@@ -198,7 +198,17 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 	}
 
 	if v != nil && len(bytes.TrimSpace(body)) > 0 {
+		// SSE 流式响应: 不能按 JSON 解码 (见 AIService.AiChatCompletionsStream)
+		if strings.HasPrefix(httpResp.Header.Get("Content-Type"), "text/event-stream") {
+			return resp, fmt.Errorf("cnb: 流式 (text/event-stream) 响应, 请使用流式方法读取 resp.Body")
+		}
 		if err := json.Unmarshal(body, v); err != nil {
+			// 裸文本兜底: 目标为 string 且响应体不是 JSON 时 (如 GetRaw 按需返回纯文本),
+			// 直接采用原文
+			if ps, ok := v.(*string); ok && !json.Valid(body) {
+				*ps = string(body)
+				return resp, nil
+			}
 			return resp, fmt.Errorf("cnb: decode response (status %d): %w", httpResp.StatusCode, err)
 		}
 	}

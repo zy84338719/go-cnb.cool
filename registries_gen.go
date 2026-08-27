@@ -158,7 +158,7 @@ func (s *RegistriesService) GetPackageTagProvenance(ctx context.Context, slug st
 // 访问令牌权限: registry-package:r
 //
 // CNB API: GET /{slug}/-/packages/{type}/{name}/-/tags
-func (s *RegistriesService) ListPackageTags(ctx context.Context, slug string, pkgType string, name string, opts *ListPackageTagsOptions) (*PlatformServiceApiInternalModelsArtifactoryDtoTag, *Response, error) {
+func (s *RegistriesService) ListPackageTags(ctx context.Context, slug string, pkgType string, name string, opts *ListPackageTagsOptions) (*ArtifactTag, *Response, error) {
 	u := escapePath("/%s/-/packages/%s/%s/-/tags", slug, pkgType, name)
 	if opts != nil {
 		var err error
@@ -171,7 +171,7 @@ func (s *RegistriesService) ListPackageTags(ctx context.Context, slug string, pk
 	if err != nil {
 		return nil, nil, err
 	}
-	var out PlatformServiceApiInternalModelsArtifactoryDtoTag
+	var out ArtifactTag
 	resp, err := s.client.Do(ctx, req, &out)
 	if err != nil {
 		return nil, resp, err

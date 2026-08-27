@@ -89,9 +89,9 @@ type PropertyForm struct {
 
 type PutCommitAnnotation struct {
 	// Key 元数据键名。Metadata key.
-	Key string `json:"key"`
+	Key *string `json:"key,omitempty"`
 	// Value 元数据值。Metadata value.
-	Value string `json:"value"`
+	Value *string `json:"value,omitempty"`
 }
 
 type PutCommitAnnotationsForm struct {
@@ -101,9 +101,9 @@ type PutCommitAnnotationsForm struct {
 
 type PutTagAnnotation struct {
 	// Key 标签元数据的键名。Tag metadata key.
-	Key string `json:"key"`
+	Key *string `json:"key,omitempty"`
 	// Value 标签元数据的值。Tag metadata value.
-	Value string `json:"value"`
+	Value *string `json:"value,omitempty"`
 }
 
 type PutTagAnnotationsForm struct {

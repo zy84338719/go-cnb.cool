@@ -151,11 +151,11 @@ type GitInternalAppVcsServiceBffApiSceneReaction struct {
 
 type MissionFilter struct {
 	// Field 属性名。Property name.
-	Field string `json:"field"`
+	Field *string `json:"field,omitempty"`
 	// Operator 筛选符。Filter operator.
-	Operator string `json:"operator"`
+	Operator *string `json:"operator,omitempty"`
 	// Value 属性值。Property value.
-	Value []string `json:"value"`
+	Value []string `json:"value,omitempty"`
 }
 
 // MissionFilterFrom 任务集资源筛选请求，包含筛选条件与需返回的字段列表。 Mission resource filter request, including filter conditions and fields to return.
@@ -171,7 +171,7 @@ type MissionMissionResourceDtoWebUserInfo struct {
 	Username string `json:"username"`
 }
 
-type PlatformServiceApiInternalModelsArtifactoryDtoTag struct {
+type ArtifactTag struct {
 	// Cargo Cargo 制品标签列表。Cargo tags.
 	Cargo []CommonRegistryTag `json:"cargo"`
 	// Composer Composer 制品标签列表。Composer tags.

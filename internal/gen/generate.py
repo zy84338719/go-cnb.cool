@@ -38,6 +38,11 @@ GO_KEYWORDS = {
 
 HTTP_METHODS = ("get", "put", "post", "delete", "options", "head", "patch")
 
+# definition 全名 -> 友好 Go 类型名 (超长内部前缀的人工映射)
+DEF_NAME_OVERRIDE = {
+    "platform_service-api_internal_models_artifactory_dto.Tag": "ArtifactTag",
+}
+
 
 # ---------------------------------------------------------------------------
 # 基础工具
@@ -136,7 +141,13 @@ def collect_refs(schema, into: set):
                 into.add(n)
                 collect_refs(DEFS.get(n, {}), into)
         for k in ("properties", "items", "allOf"):
-            collect_refs(schema.get(k), into)
+            v = schema.get(k)
+            if k == "properties" and isinstance(v, dict):
+                # properties 是 {字段名: 子schema}, 必须深入每个属性值
+                for sub in v.values():
+                    collect_refs(sub, into)
+            else:
+                collect_refs(v, into)
         ap = schema.get("additionalProperties")
         if isinstance(ap, dict):
             collect_refs(ap, into)
@@ -189,6 +200,8 @@ for r in ("Client", "Response", "ErrorResponse", "ListOptions", "service",
 
 
 def def_go_name(defname: str) -> str:
+    if defname in DEF_NAME_OVERRIDE:
+        return names.alloc(DEF_NAME_OVERRIDE[defname])
     segs = defname.split(".")
     for i in range(len(segs) - 1, -1, -1):
         cand = pascal("".join(segs[i:]))

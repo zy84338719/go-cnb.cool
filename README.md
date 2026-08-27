@@ -221,6 +221,25 @@ _, err = client.Members.AddMembersOfGroup(ctx, "my-org", "someone", cnb.UpdateMe
 })
 ```
 
+### AI:流式对话
+
+部分 CNB AI 模型仅支持流式返回，请用流式方法 + `cnb.ScanSSE` 消费 SSE 事件:
+
+```go
+resp, err := client.AI.AiChatCompletionsStream(ctx, "org/repo", cnb.AiChatCompletionsReq{
+    Model:    cnb.Ptr("模型名"),
+    Stream:   cnb.Ptr(true),
+    Messages: []cnb.Message{{Role: cnb.Ptr("user"), Content: cnb.Ptr("你好")}},
+})
+if err != nil {
+    panic(err)
+}
+err = cnb.ScanSSE(resp.Body, func(ev cnb.SSEEvent) error {
+    fmt.Println(ev.Data) // JSON 增量; "[DONE]" 表示结束
+    return nil           // 返回 error 提前终止
+})
+```
+
 ## 分页
 
 CNB 分页参数为 `page`(从 1 起)/ `page_size`(默认 10,上限 100)，响应为裸数组、**不返回总数**。所有列表类 Options 内嵌 `cnb.ListOptions`，用 `cnb.EachPage` 逐页遍历，直到空页或不足一页:

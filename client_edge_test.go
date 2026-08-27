@@ -313,3 +313,84 @@ func TestInvalidJSONResponse(t *testing.T) {
 		t.Errorf("错误应包含状态码: %v", err)
 	}
 }
+
+// GetRaw 裸文本响应: 非 JSON body 时 *string 目标直接采用原文.
+func TestGetRawPlainTextFallback(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		_, _ = w.Write([]byte("hello raw file content"))
+	}))
+	defer srv.Close()
+
+	c, _ := NewClient("tok", WithBaseURL(srv.URL))
+	raw, _, err := c.Git.GetRaw(context.Background(), "a/b", "main/README.md", nil)
+	if err != nil {
+		t.Fatalf("裸文本应兜底成功: %v", err)
+	}
+	if *raw != "hello raw file content" {
+		t.Errorf("raw = %q", *raw)
+	}
+
+	// JSON 字符串则正常解码
+	srv2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`"json string"`))
+	}))
+	defer srv2.Close()
+	c2, _ := NewClient("tok", WithBaseURL(srv2.URL))
+	raw2, _, err := c2.Git.GetRaw(context.Background(), "a/b", "main/x", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if *raw2 != "json string" {
+		t.Errorf("raw2 = %q", *raw2)
+	}
+}
+
+// SSE 流式响应: 普通解码方法报明确错误, 流式方法 + ScanSSE 正常消费.
+func TestAIStreamAndSSE(t *testing.T) {
+	sse := "data: {\"delta\":\"你\"}\n\ndata: {\"delta\":\"好\"}\n\nevent: done\ndata: [DONE]\n\n"
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		_, _ = w.Write([]byte(sse))
+	}))
+	defer srv.Close()
+
+	c, _ := NewClient("tok", WithBaseURL(srv.URL))
+	ctx := context.Background()
+
+	// 非流式方法收到 SSE 应报明确错误
+	_, _, err := c.AI.AiChatCompletions(ctx, "a/b", AiChatCompletionsReq{Model: Ptr("m")})
+	if err == nil || !strings.Contains(err.Error(), "流式") {
+		t.Errorf("SSE 响应应报流式错误, got: %v", err)
+	}
+
+	// 流式方法 + ScanSSE
+	resp, err := c.AI.AiChatCompletionsStream(ctx, "a/b", AiChatCompletionsReq{
+		Model:  Ptr("m"),
+		Stream: Ptr(true),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var datas, events []string
+	if err := ScanSSE(resp.Body, func(ev SSEEvent) error {
+		datas = append(datas, ev.Data)
+		events = append(events, ev.Event)
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if len(datas) != 3 || datas[0] != `{"delta":"你"}` || datas[2] != "[DONE]" {
+		t.Errorf("datas = %v", datas)
+	}
+	if events[2] != "done" {
+		t.Errorf("events = %v", events)
+	}
+
+	// ScanSSE 提前终止
+	resp2, _ := c.AI.AiChatCompletionsStream(ctx, "a/b", AiChatCompletionsReq{Stream: Ptr(true)})
+	stopErr := errors.New("stop")
+	if err := ScanSSE(resp2.Body, func(SSEEvent) error { return stopErr }); !errors.Is(err, stopErr) {
+		t.Errorf("want stopErr, got %v", err)
+	}
+}

@@ -1012,19 +1012,19 @@ type PullReviewComment struct {
 
 type PullReviewCommentCreationForm struct {
 	// Body 评论内容。Comment content.
-	Body string `json:"body"`
+	Body *string `json:"body,omitempty"`
 	// EndLine 结束行号，subject_type=line时必填。
-	EndLine int `json:"end_line"`
+	EndLine *int `json:"end_line,omitempty"`
 	// EndSide 评论结束位置的代码版本侧，subject_type=line时必填。可选值：`left`,`right`
-	EndSide string `json:"end_side"`
+	EndSide *string `json:"end_side,omitempty"`
 	// Path 文件路径。示例值：`src/main.go`
-	Path string `json:"path"`
+	Path *string `json:"path,omitempty"`
 	// StartLine 起始行号，subject_type=line时必填。
-	StartLine int `json:"start_line"`
+	StartLine *int `json:"start_line,omitempty"`
 	// StartSide 评论起始位置的代码版本侧，subject_type=line时必填。可选值：`left`,`right`
-	StartSide string `json:"start_side"`
+	StartSide *string `json:"start_side,omitempty"`
 	// SubjectType 评论对象类型，当subject_type为file时无需指定行号和侧别字段。可选值：`line`,`file`
-	SubjectType string `json:"subject_type"`
+	SubjectType *string `json:"subject_type,omitempty"`
 }
 
 type PullReviewCreationForm struct {

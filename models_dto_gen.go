@@ -1236,9 +1236,9 @@ type MemberAccessLevelInSlugUnion struct {
 
 type Message struct {
 	// Content 内容。Content.
-	Content string `json:"content"`
+	Content *string `json:"content,omitempty"`
 	// Role 角色，可选值：user、assistant。Role, values: user, assistant.
-	Role string `json:"role"`
+	Role *string `json:"role,omitempty"`
 }
 
 type DtoMetaData struct {
@@ -1262,17 +1262,17 @@ type DtoMetaData struct {
 
 type MetadataCondition struct {
 	// ComparisonOperator 运算符: "is", "is not", "contains", "not contains", "starts with", "ends with", "is empty", "is not empty"
-	ComparisonOperator string `json:"comparison_operator"`
+	ComparisonOperator *string `json:"comparison_operator,omitempty"`
 	// Name 字段名称: "position", "path", "type"
-	Name string `json:"name"`
+	Name *string `json:"name,omitempty"`
 	// Value 比较值（"is empty" 和 "is not empty" 时忽略此字段）
-	Value string `json:"value"`
+	Value *string `json:"value,omitempty"`
 }
 
 type MetadataFilteringConditions struct {
-	Conditions []MetadataCondition `json:"conditions"`
+	Conditions []MetadataCondition `json:"conditions,omitempty"`
 	// LogicalOperator "and" 或 "or"，默认 "and"
-	LogicalOperator string `json:"logical_operator"`
+	LogicalOperator *string `json:"logical_operator,omitempty"`
 }
 
 type MissionPostViewReq struct {
@@ -1307,32 +1307,32 @@ type MissionViewConfig struct {
 }
 
 type MissionViewFieldConfig struct {
-	Field string `json:"field"`
-	Width int    `json:"width"`
+	Field *string `json:"field,omitempty"`
+	Width *int    `json:"width,omitempty"`
 }
 
 type MissionViewGroup struct {
-	CustomOrders  MissionViewGroupCustom `json:"customOrders"`
-	CustomVisible MissionViewGroupCustom `json:"customVisible"`
-	ExpendedList  []json.RawMessage      `json:"expendedList"`
-	Field         string                 `json:"field"`
-	Order         MissionViewSortOrder   `json:"order"`
+	CustomOrders  *MissionViewGroupCustom `json:"customOrders,omitempty"`
+	CustomVisible *MissionViewGroupCustom `json:"customVisible,omitempty"`
+	ExpendedList  []json.RawMessage       `json:"expendedList,omitempty"`
+	Field         *string                 `json:"field,omitempty"`
+	Order         *MissionViewSortOrder   `json:"order,omitempty"`
 }
 
 type MissionViewGroupCustom struct {
-	Field string            `json:"field"`
-	Value []json.RawMessage `json:"value"`
+	Field *string           `json:"field,omitempty"`
+	Value []json.RawMessage `json:"value,omitempty"`
 }
 
 type MissionViewSelector struct {
-	Field    string       `json:"field"`
-	Operator OperatorType `json:"operator"`
-	Value    []string     `json:"value"`
+	Field    *string       `json:"field,omitempty"`
+	Operator *OperatorType `json:"operator,omitempty"`
+	Value    []string      `json:"value,omitempty"`
 }
 
 type MissionViewSort struct {
-	Field string               `json:"field"`
-	Order MissionViewSortOrder `json:"order"`
+	Field *string               `json:"field,omitempty"`
+	Order *MissionViewSortOrder `json:"order,omitempty"`
 }
 
 // Missions4User 用户的任务集查询接口返回值，包含任务集信息、完整路径与访问者相关信息。 User mission query response, including mission info, full path and visitor-specific info.
@@ -2382,9 +2382,9 @@ type StarUser struct {
 
 type StartBuildNpc struct {
 	// Name NPC 名称，仅支持 "CodeBuddy"。NPC name, only "CodeBuddy" is accepted.
-	Name string `json:"name"`
+	Name *string `json:"name,omitempty"`
 	// WorkMode 是否开启工作模式，未开启时 CNB_TOKEN 以只读权限为主。Whether to enable work mode; when disabled, CNB_TOKEN is mostly read-only.
-	WorkMode bool `json:"workMode"`
+	WorkMode *bool `json:"workMode,omitempty"`
 }
 
 type StartBuildReq struct {

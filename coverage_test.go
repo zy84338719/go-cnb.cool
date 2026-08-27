@@ -270,3 +270,179 @@ func TestMethodsHaveContext(t *testing.T) {
 	}
 	_ = fmt.Sprint()
 }
+
+// ---------------------------------------------------------------------------
+// 正例解码: 按 spec 响应 schema 自动生成样例 JSON, 覆盖全部 259 个方法的解码路径.
+// ---------------------------------------------------------------------------
+
+type rawSchema map[string]any
+
+func (s rawSchema) refName() string {
+	r, _ := s["$ref"].(string)
+	parts := strings.Split(r, "/")
+	return parts[len(parts)-1]
+}
+
+func specDefs(t *testing.T) map[string]rawSchema {
+	t.Helper()
+	var spec struct {
+		Definitions map[string]rawSchema `json:"definitions"`
+	}
+	if err := json.Unmarshal(swaggerSpec, &spec); err != nil {
+		t.Fatal(err)
+	}
+	return spec.Definitions
+}
+
+// sampleFromSchema 依据 schema 生成一个可解码的样例值.
+func sampleFromSchema(t *testing.T, defs map[string]rawSchema, schema rawSchema, depth int) any {
+	t.Helper()
+	if depth > 6 {
+		return nil
+	}
+	if ref, ok := schema["$ref"].(string); ok && ref != "" {
+		name := schema.refName()
+		d, ok := defs[name]
+		if !ok {
+			t.Fatalf("unknown $ref %s", ref)
+		}
+		return sampleFromSchema(t, defs, d, depth+1)
+	}
+	if allOf, ok := schema["allOf"].([]any); ok && len(allOf) > 0 {
+		if sub, ok := allOf[0].(map[string]any); ok {
+			if _, hasRef := sub["$ref"]; hasRef {
+				return sampleFromSchema(t, defs, sub, depth+1)
+			}
+		}
+		// 多段 allOf: 合并属性
+		merged := map[string]any{}
+		for _, seg := range allOf {
+			if sm, ok := seg.(map[string]any); ok {
+				if props, ok := sm["properties"].(map[string]any); ok {
+					for k, v := range props {
+						merged[k] = v
+					}
+				}
+			}
+		}
+		return sampleFromSchema(t, defs, rawSchema{"type": "object", "properties": merged}, depth+1)
+	}
+	switch schema["type"] {
+	case "array":
+		items, _ := schema["items"].(map[string]any)
+		if items == nil {
+			items = map[string]any{"type": "string"}
+		}
+		return []any{
+			sampleFromSchema(t, defs, items, depth+1),
+			sampleFromSchema(t, defs, items, depth+1),
+		}
+	case "object":
+		out := map[string]any{}
+		if props, ok := schema["properties"].(map[string]any); ok && len(props) > 0 {
+			for name, p := range props {
+				if pm, ok := p.(map[string]any); ok {
+					out[name] = sampleFromSchema(t, defs, pm, depth+1)
+				}
+			}
+			return out
+		}
+		if ap, ok := schema["additionalProperties"].(map[string]any); ok && len(ap) > 0 {
+			return map[string]any{"k": sampleFromSchema(t, defs, ap, depth+1)}
+		}
+		return map[string]any{}
+	case "string":
+		if enum, ok := schema["enum"].([]any); ok && len(enum) > 0 {
+			return enum[0]
+		}
+		return "s"
+	case "integer":
+		return 1
+	case "number":
+		return 1.5
+	case "boolean":
+		return true
+	}
+	return nil
+}
+
+// TestRouteTablePositiveDecode 对每个操作按其 2xx 响应 schema 生成样例 JSON,
+// 真实调用 SDK 方法并要求解码成功 —— 覆盖全部方法的正例解码路径
+// (能抓到字段类型不匹配 / tag 错误 / RawMessage / map 等问题).
+func TestRouteTablePositiveDecode(t *testing.T) {
+	ops := loadSpec(t)
+	defs := specDefs(t)
+
+	var specFull struct {
+		Paths map[string]map[string]struct {
+			OperationID string `json:"operationId"`
+			Responses   map[string]struct {
+				Schema rawSchema `json:"schema"`
+			} `json:"responses"`
+		} `json:"paths"`
+	}
+	if err := json.Unmarshal(swaggerSpec, &specFull); err != nil {
+		t.Fatal(err)
+	}
+
+	// (method, path) -> 样例响应 JSON
+	samples := map[string][]byte{}
+	for path, item := range specFull.Paths {
+		for method, op := range item {
+			if op.OperationID == "" {
+				continue
+			}
+			var sample any
+			for _, code := range []string{"200", "201", "202", "204"} {
+				if r, ok := op.Responses[code]; ok && r.Schema != nil {
+					sample = sampleFromSchema(t, defs, r.Schema, 0)
+					break
+				}
+			}
+			b, err := json.Marshal(sample)
+			if err != nil {
+				t.Fatalf("marshal sample for %s: %v", op.OperationID, err)
+			}
+			samples[strings.ToUpper(method)+" "+path] = b
+		}
+	}
+
+	var mu sync.Mutex
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		key := r.Method + " " + r.URL.Path
+		mu.Lock()
+		body, ok := samples[key]
+		mu.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		if ok {
+			_, _ = w.Write(body)
+		} else {
+			_, _ = w.Write([]byte("null"))
+		}
+	}))
+	defer srv.Close()
+
+	client, err := NewClient("test-token", WithBaseURL(srv.URL))
+	if err != nil {
+		t.Fatal(err)
+	}
+	methods := serviceMethods(t, client)
+
+	var failed int
+	for _, op := range ops {
+		m, ok := methods[op.OperationID]
+		if !ok {
+			continue // 缺失已由 TestRouteTableFullCoverage 报告
+		}
+		args, _ := buildCallArgs(t, m, op)
+		results := m.Call(args)
+		if errVal := results[len(results)-1]; !errVal.IsNil() {
+			failed++
+			t.Errorf("%s 正例解码失败: %v", op.OperationID, errVal.Interface())
+		}
+	}
+	if failed > 0 {
+		t.Fatalf("%d/%d 个方法正例解码失败", failed, len(ops))
+	}
+	t.Logf("正例解码全量通过: %d 个操作", len(ops))
+}

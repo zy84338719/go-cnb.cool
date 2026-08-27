@@ -231,3 +231,25 @@ func ExampleAccessRole() {
 		fmt.Println("owner")
 	}
 }
+
+// 流式 AI 对话.
+func ExampleAIService_AiChatCompletionsStream() {
+	client := setupClient()
+	ctx := setupCtx()
+
+	resp, err := client.AI.AiChatCompletionsStream(ctx, "org/repo", cnb.AiChatCompletionsReq{
+		Model:    cnb.Ptr("模型名"),
+		Stream:   cnb.Ptr(true),
+		Messages: []cnb.Message{{Role: cnb.Ptr("user"), Content: cnb.Ptr("你好")}},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = cnb.ScanSSE(resp.Body, func(ev cnb.SSEEvent) error {
+		fmt.Println(ev.Data) // JSON 增量, 结构同 AiChatCompletionsChoice; "[DONE]" 结束
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
