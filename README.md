@@ -101,7 +101,9 @@ func main() {
 }
 ```
 
-可运行版本见 [`examples/basic`](examples/basic/main.go)。
+可运行示例:
+- [`examples/basic`](examples/basic/main.go)——用户信息 / 组织 / Issue 遍历
+- [`examples/issue-triage`](examples/issue-triage/main.go)——自动给无标签 Issue 打标 + 评论(写操作 + 分页 + 错误处理实战)
 
 ## 认证
 

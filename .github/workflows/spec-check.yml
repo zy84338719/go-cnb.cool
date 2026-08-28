@@ -1,0 +1,99 @@
+name: Spec Check
+
+# 每周检查 CNB 官方 swagger.json 是否更新, 有变化则重新生成 SDK 并自动开 PR
+on:
+  schedule:
+    - cron: '0 1 * * 1' # 每周一 01:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: spec-check
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check upstream swagger.json
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: false
+
+      - name: Download latest swagger.json
+        run: curl -fsSL --max-time 60 https://api.cnb.cool/swagger.json -o /tmp/swagger-new.json
+
+      - name: Compare with snapshot
+        id: cmp
+        run: |
+          if cmp -s /tmp/swagger-new.json internal/gen/swagger.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "spec 未变化"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "spec 有更新"
+          fi
+
+      - name: Count operation diff
+        if: steps.cmp.outputs.changed == 'true'
+        run: |
+          old=$(python3 -c "
+          import json
+          s=json.load(open('internal/gen/swagger.json'))
+          print(sum(1 for p in s['paths'].values() for m in ('get','post','put','delete','patch','head','options') if m in p))")
+          new=$(python3 -c "
+          import json
+          s=json.load(open('/tmp/swagger-new.json'))
+          print(sum(1 for p in s['paths'].values() for m in ('get','post','put','delete','patch','head','options') if m in p))")
+          echo "OLD_OPS=$old" >> "$GITHUB_ENV"
+          echo "NEW_OPS=$new" >> "$GITHUB_ENV"
+          echo "操作数: $old -> $new"
+
+      - name: Regenerate SDK
+        if: steps.cmp.outputs.changed == 'true'
+        run: |
+          cp /tmp/swagger-new.json internal/gen/swagger.json
+          python3 internal/gen/generate.py
+          go build ./... || exit 1
+          go vet ./... || exit 1
+          # 测试尽力而为: 操作数断言 (TestOperationCount) 在 spec 变化时预期失败,
+          # 结果写入日志供 PR 检查, 不阻断建 PR
+          go test ./... -count=1 || echo "TESTS_FAILED=true" >> "$GITHUB_ENV"
+
+      - name: Create pull request
+        if: steps.cmp.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          branch="auto/spec-update-$(date +%Y%m%d)"
+          git checkout -b "$branch"
+          git add -A
+          git commit -m "auto: 同步 CNB swagger.json 并重新生成 SDK (操作数 $OLD_OPS -> $NEW_OPS)"
+          git push origin "$branch"
+          body="CNB 官方 swagger.json 有更新, 已重新生成 SDK。
+
+          - 操作数: **$OLD_OPS -> $NEW_OPS**
+          - 生成代码: build/vet 已通过
+          - 测试: ${TESTS_FAILED:+**有失败 (通常是 TestOperationCount 操作数断言, 请更新断言后合并)**}${TESTS_FAILED:-全部通过}
+
+          > 由 Spec Check workflow 自动生成。合并前请人工 review 生成代码 diff。"
+          gh pr create --title "auto: CNB API spec 更新 ($OLD_OPS -> $NEW_OPS 操作)" \
+            --body "$body" --base main
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.cmp.outputs.changed }}" = "true" ]; then
+            echo "### spec 已更新, PR 已创建 (操作数 $OLD_OPS -> $NEW_OPS)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### spec 无变化, SDK 已是最新" >> "$GITHUB_STEP_SUMMARY"
+          fi
