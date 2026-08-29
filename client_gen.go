@@ -17,6 +17,8 @@ type Client struct {
 	UserAgent string
 	// Accept 为空时使用默认值 application/json.
 	Accept string
+	// retryMax 由 WithRetry 设置; 0 表示不重试.
+	retryMax int
 
 	AI               *AIService
 	Activities       *ActivitiesService

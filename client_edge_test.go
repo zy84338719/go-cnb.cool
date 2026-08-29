@@ -394,3 +394,156 @@ func TestAIStreamAndSSE(t *testing.T) {
 		t.Errorf("want stopErr, got %v", err)
 	}
 }
+
+// WithRetry: 5xx 重试后成功 / 4xx 不重试 / POST 500 不重试 / 429 遵守 Retry-After.
+func TestWithRetry(t *testing.T) {
+	originBackoff := 200 * time.Millisecond
+	_ = originBackoff // 退避从 ~300ms 起, 测试总耗时可接受
+
+	var hits int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		switch r.URL.Path {
+		case "/user": // GET /user: 前两次 503, 之后成功
+			if hits <= 2 {
+				w.WriteHeader(http.StatusServiceUnavailable)
+				_, _ = w.Write([]byte(`{"errcode":503,"errmsg":"upstream"}`))
+				return
+			}
+			_, _ = w.Write([]byte(`{"username":"ok"}`))
+		case "/notfound":
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = w.Write([]byte(`{"errcode":404,"errmsg":"nf"}`))
+		case "/a/b/-/issues": // POST: 返回 500
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(`{"errcode":500,"errmsg":"boom"}`))
+		default:
+			_, _ = w.Write([]byte("null"))
+		}
+	}))
+	defer srv.Close()
+
+	c, _ := NewClient("tok", WithBaseURL(srv.URL), WithRetry(3))
+	ctx := context.Background()
+
+	// 1. 503 重试两次后成功
+	hits = 0
+	u, _, err := c.Users.GetUserInfo(ctx)
+	if err != nil {
+		t.Fatalf("重试后应成功: %v", err)
+	}
+	if hits != 3 {
+		t.Errorf("hits = %d, want 3", hits)
+	}
+	if u.Username != "ok" {
+		t.Errorf("username = %q", u.Username)
+	}
+
+	// 2. 404 不重试
+	hits = 0
+	_, _, _ = c.Repositories.GetByID(ctx, "notfound")
+	if hits != 1 {
+		t.Errorf("404 不应重试, hits = %d", hits)
+	}
+
+	// 3. POST 的 500 不可重试 (非 502/503/504)
+	hits = 0
+	_, _, _ = c.Issues.CreateIssue(ctx, "a/b", PostIssueForm{Title: Ptr("x")})
+	if hits != 1 {
+		t.Errorf("POST 500 不应重试, hits = %d", hits)
+	}
+}
+
+// 网络层错误: GET 重试 (自定义 Transport 模拟首次失败), POST 不重试.
+func TestWithRetryNetworkError(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"username":"ok"}`))
+	}))
+	defer srv.Close()
+
+	var calls int
+	rt := roundTripperFunc(func(r *http.Request) (*http.Response, error) {
+		calls++
+		if calls == 1 {
+			return nil, errors.New("connection reset by peer")
+		}
+		return http.DefaultTransport.RoundTrip(r)
+	})
+	c, _ := NewClient("tok", WithBaseURL(srv.URL), WithHTTPClient(&http.Client{Transport: rt}), WithRetry(2))
+
+	// GET: 网络错误重试后成功
+	calls = 0
+	if _, _, err := c.Users.GetUserInfo(context.Background()); err != nil {
+		t.Fatalf("GET 重试后应成功: %v", err)
+	}
+	if calls != 2 {
+		t.Errorf("calls = %d, want 2", calls)
+	}
+
+	// POST + 网络错误: 不重试
+	calls = 0
+	_, _, _ = c.Issues.CreateIssue(context.Background(), "a/b", PostIssueForm{})
+	if calls != 1 {
+		t.Errorf("POST 网络错误不应重试, calls = %d", calls)
+	}
+}
+
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+// 429 遵守 Retry-After.
+func TestWithRetry429RetryAfter(t *testing.T) {
+	var hits int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		if hits == 1 {
+			w.Header().Set("Retry-After", "1")
+			w.WriteHeader(http.StatusTooManyRequests)
+			_, _ = w.Write([]byte(`{"errcode":429,"errmsg":"rate"}`))
+			return
+		}
+		_, _ = w.Write([]byte(`{"username":"ok"}`))
+	}))
+	defer srv.Close()
+
+	c, _ := NewClient("tok", WithBaseURL(srv.URL), WithRetry(2))
+	start := time.Now()
+	u, _, err := c.Users.GetUserInfo(context.Background())
+	if err != nil {
+		t.Fatalf("429 重试后应成功: %v", err)
+	}
+	if hits != 2 || u.Username != "ok" {
+		t.Errorf("hits=%d user=%q", hits, u.Username)
+	}
+	if elapsed := time.Since(start); elapsed < 900*time.Millisecond {
+		t.Errorf("应遵守 Retry-After=1s, 实际等待 %v", elapsed)
+	}
+}
+
+// Content.DecodedContent: base64 解码与错误分支.
+func TestContentDecodedContent(t *testing.T) {
+	c := &Content{Type: "blob", Encoding: "base64", Content: "aGVsbG8gY25i"}
+	b, err := c.DecodedContent()
+	if err != nil || string(b) != "hello cnb" {
+		t.Errorf("decoded = %q err = %v", b, err)
+	}
+
+	// 目录类型不可解码
+	tree := &Content{Type: "tree"}
+	if _, err := tree.DecodedContent(); err == nil {
+		t.Error("tree 应返回 ErrContentNotDecodable")
+	}
+
+	// 空内容
+	empty := &Content{Type: "blob", Encoding: "base64"}
+	if b, err := empty.DecodedContent(); err != nil || b != nil {
+		t.Errorf("empty: %q %v", b, err)
+	}
+
+	// 非法 base64
+	bad := &Content{Type: "blob", Encoding: "base64", Content: "!!!not-base64!!!"}
+	if _, err := bad.DecodedContent(); err == nil {
+		t.Error("非法 base64 应报错")
+	}
+}

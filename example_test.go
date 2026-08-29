@@ -253,3 +253,30 @@ func ExampleAIService_AiChatCompletionsStream() {
 		log.Fatal(err)
 	}
 }
+
+// 读文件并解码 base64 内容.
+func ExampleContent_DecodedContent() {
+	client := setupClient()
+	ctx := setupCtx()
+
+	content, _, err := client.Git.GetContent(ctx, "org/repo", "main.go", &cnb.GetContentOptions{
+		Ref: cnb.Ptr("main"),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	src, err := content.DecodedContent()
+	if err != nil {
+		log.Fatal(err) // 目录 (type=tree) 等不可解码, 请用 content.Entries
+	}
+	fmt.Println(len(src))
+}
+
+// 自动重试.
+func ExampleWithRetry() {
+	client, err := cnb.NewClient("your-access-token", cnb.WithRetry(3))
+	if err != nil {
+		log.Fatal(err)
+	}
+	_ = client // 429/502/503/504 自动重试; 网络错误仅 GET/HEAD 重试
+}

@@ -170,10 +170,11 @@ commits, _, _ := client.Git.ListCommits(ctx, "org/repo", &cnb.ListCommitsOptions
     Since: cnb.Ptr("2026-01-01T00:00:00Z"),
 })
 
-// 读文件 (指定 ref)
+// 读文件 (指定 ref), 内容为 base64, 用 DecodedContent 解码
 content, _, _ := client.Git.GetContent(ctx, "org/repo", "README.md", &cnb.GetContentOptions{
     Ref: cnb.Ptr("main"),
 })
+src, err := content.DecodedContent() // []byte 文件内容; 目录用 content.Entries
 
 // 两点对比 (格式 base...head)
 diff, _, _ := client.Git.GetCompareCommits(ctx, "org/repo", "main...dev")
@@ -335,6 +336,16 @@ if err != nil {
 client.UserAgent = "my-bot/1.0"                   // 默认 "go-cnb"
 client.Accept = "application/vnd.cnb.api+json"     // 默认 "application/json"
 ```
+
+**自动重试**(可选,`cnb.WithRetry`):
+
+```go
+client, _ := cnb.NewClient(token, cnb.WithRetry(3))
+```
+
+- `429/502/503/504` 所有方法自动重试,`429` 优先遵守 `Retry-After`
+- 网络层错误(连接失败/超时)仅幂等的 `GET/HEAD` 重试
+- 指数退避(200ms 起,上限 3s)+ 抖动;其余(含 4xx 业务错误)不重试
 
 ## API 覆盖总览
 

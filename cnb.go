@@ -85,6 +85,24 @@ func WithBaseURL(raw string) ClientOption {
 	}
 }
 
+// WithRetry 启用自动重试 (默认关闭).
+//
+// 重试策略 (见 retry.go):
+//   - 429/502/503/504: 所有方法重试 (429 优先遵守 Retry-After)
+//   - 网络层错误 (连接失败/超时): 仅幂等的 GET/HEAD 重试
+//   - 其余 (含 4xx 业务错误): 不重试
+//
+// 退避为指数级 (200ms 起, 上限 3s) 附加抖动. maxRetries 建议 2~4.
+// 请求体由 SDK 构造, 可自动重放; 通过 NewRequest 自带 body 的请求若不可重放则跳过重试.
+func WithRetry(maxRetries int) ClientOption {
+	return func(c *Client) {
+		if maxRetries < 0 {
+			maxRetries = 0
+		}
+		c.retryMax = maxRetries
+	}
+}
+
 // Response 包装 HTTP 响应.
 //
 // 对于没有 JSON schema 的接口 (文件/归档/图片/日志下载等, 生成的方法只返回
@@ -167,11 +185,35 @@ func (c *Client) resolveURL(urlStr string) (*url.URL, error) {
 	return &u, nil
 }
 
-// Do 执行请求.
+// Do 执行请求, 按 WithRetry 配置自动重试.
 //
 // v 非 nil 时把响应体 JSON 解码到 v; v 为 nil 时响应体被完整缓冲,
 // 通过 resp.Body 暴露. 非 2xx/3xx 状态码返回 *ErrorResponse.
 func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, error) {
+	resp, err := c.doOnce(ctx, req, v)
+	for attempt := 1; c.retryMax > 0 && attempt <= c.retryMax; attempt++ {
+		if !c.shouldRetry(req, resp, err) {
+			break
+		}
+		if waitErr := c.sleepBackoff(ctx, resp, attempt); waitErr != nil {
+			return resp, err
+		}
+		if req.GetBody != nil {
+			b, gbErr := req.GetBody()
+			if gbErr != nil {
+				return resp, err
+			}
+			req.Body = b
+		} else if req.Body != nil {
+			break // 请求体不可重放
+		}
+		resp, err = c.doOnce(ctx, req, v)
+	}
+	return resp, err
+}
+
+// doOnce 执行单次请求 (无重试).
+func (c *Client) doOnce(ctx context.Context, req *http.Request, v any) (*Response, error) {
 	req = req.WithContext(ctx)
 
 	if c.token != "" && req.Header.Get("Authorization") == "" {

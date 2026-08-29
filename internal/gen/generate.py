@@ -661,6 +661,8 @@ lines.append("\t// UserAgent 为空时使用默认值.")
 lines.append("\tUserAgent string")
 lines.append("\t// Accept 为空时使用默认值 application/json.")
 lines.append("\tAccept string")
+lines.append("\t// retryMax 由 WithRetry 设置; 0 表示不重试.")
+lines.append("\tretryMax int")
 lines.append("")
 for tag in sorted(ops_by_tag):
     svc, field, _ = TAG_SERVICE[tag]
