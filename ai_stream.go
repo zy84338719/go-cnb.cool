@@ -40,17 +40,23 @@ type SSEEvent struct {
 
 // ScanSSE 从 r 中逐个读取 SSE 事件, 对每个事件调用 fn; fn 返回错误时提前终止.
 // 流读取完毕返回 nil, 否则返回 fn 的错误或读取错误.
+//
+// 按 SSE 规范: 同一事件的多行 data 以 "\n" 连接; 空行是事件分隔符.
 func ScanSSE(r io.Reader, fn func(SSEEvent) error) error {
 	scanner := bufio.NewScanner(r)
 	scanner.Buffer(make([]byte, 0, 64*1024), 8*1024*1024)
-	var ev SSEEvent
+	var (
+		event      string
+		dataLines  []string
+		hasContent bool
+	)
 	flush := func() error {
-		if ev.Data != "" || ev.Event != "" {
-			if err := fn(ev); err != nil {
+		if hasContent {
+			if err := fn(SSEEvent{Event: event, Data: strings.Join(dataLines, "\n")}); err != nil {
 				return err
 			}
 		}
-		ev = SSEEvent{}
+		event, dataLines, hasContent = "", nil, false
 		return nil
 	}
 	for scanner.Scan() {
@@ -60,10 +66,14 @@ func ScanSSE(r io.Reader, fn func(SSEEvent) error) error {
 			if err := flush(); err != nil {
 				return err
 			}
+		case strings.HasPrefix(line, ":"):
+			// 注释行, 忽略
 		case strings.HasPrefix(line, "data:"):
-			ev.Data += strings.TrimPrefix(strings.TrimPrefix(line, "data:"), " ")
+			dataLines = append(dataLines, strings.TrimPrefix(strings.TrimPrefix(line, "data:"), " "))
+			hasContent = true
 		case strings.HasPrefix(line, "event:"):
-			ev.Event = strings.TrimPrefix(strings.TrimPrefix(line, "event:"), " ")
+			event = strings.TrimPrefix(strings.TrimPrefix(line, "event:"), " ")
+			hasContent = true
 		}
 	}
 	if err := scanner.Err(); err != nil {

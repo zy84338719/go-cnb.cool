@@ -181,6 +181,7 @@ func (c *Client) resolveURL(urlStr string) (*url.URL, error) {
 	// 对带路径前缀的网关 (如 https://host/api/) 需要手动补回.
 	if strings.HasPrefix(rel.Path, "/") && base.Path != "" && base.Path != "/" {
 		u.Path = strings.TrimSuffix(base.Path, "/") + rel.Path
+		u.RawPath = "" // 防止 String() 复用 ResolveReference 留下的旧编码路径
 	}
 	return &u, nil
 }
@@ -195,17 +196,24 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 		if !c.shouldRetry(req, resp, err) {
 			break
 		}
-		if waitErr := c.sleepBackoff(ctx, resp, attempt); waitErr != nil {
-			return resp, err
-		}
-		if req.GetBody != nil {
+		// 先确认请求体可重放, 再进入退避等待
+		var body io.ReadCloser
+		if req.Body != nil {
+			if req.GetBody == nil {
+				break // 请求体不可重放
+			}
 			b, gbErr := req.GetBody()
 			if gbErr != nil {
-				return resp, err
+				break
 			}
-			req.Body = b
-		} else if req.Body != nil {
-			break // 请求体不可重放
+			body = b
+		}
+		if waitErr := c.sleepBackoff(ctx, resp, attempt); waitErr != nil {
+			// ctx 被取消/超时: 返回 ctx 错误 (而非上一轮的响应/错误)
+			return nil, waitErr
+		}
+		if body != nil {
+			req.Body = body
 		}
 		resp, err = c.doOnce(ctx, req, v)
 	}

@@ -547,3 +547,93 @@ func TestContentDecodedContent(t *testing.T) {
 		t.Error("非法 base64 应报错")
 	}
 }
+
+// ScanSSE 规范行为: 多行 data 换行连接 / 注释行忽略 / CRLF 兼容.
+func TestScanSSEMultiline(t *testing.T) {
+	sse := "data: line1\ndata: line2\n\n: keep-alive comment\ndata: {\"a\":1}\r\n\r\nevent: end\ndata: [DONE]\n\n"
+	var got []SSEEvent
+	err := ScanSSE(strings.NewReader(sse), func(ev SSEEvent) error {
+		got = append(got, ev)
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 3 {
+		t.Fatalf("events = %d, want 3: %+v", len(got), got)
+	}
+	if got[0].Data != "line1\nline2" {
+		t.Errorf("多行 data 应以 \\n 连接, got %q", got[0].Data)
+	}
+	if got[1].Data != `{"a":1}` {
+		t.Errorf("CRLF 行解码错: %q", got[1].Data)
+	}
+	if got[2].Event != "end" || got[2].Data != "[DONE]" {
+		t.Errorf("end event: %+v", got[2])
+	}
+}
+
+// 退避位移不溢出: 大 attempt 也应得到正数且不超上限的等待.
+func TestSleepBackoffNoOverflow(t *testing.T) {
+	c := &Client{}
+	ctx := context.Background()
+	for attempt := 1; attempt <= 80; attempt++ {
+		// 只验证计算逻辑: 用无 Retry-After 的 503 响应, ctx 立即取消以快速返回
+		resp := &Response{Response: &http.Response{StatusCode: 503, Header: http.Header{}}}
+		cancelCtx, cancel := context.WithCancel(ctx)
+		cancel()
+		if err := c.sleepBackoff(cancelCtx, resp, attempt); !errors.Is(err, context.Canceled) {
+			t.Fatalf("attempt=%d: want ctx.Canceled, got %v", attempt, err)
+		}
+	}
+}
+
+// ctx 取消的 GET 不重试, 且返回 ctx 错误.
+func TestRetryContextCanceledNoRetry(t *testing.T) {
+	var hits int
+	rt := roundTripperFunc(func(r *http.Request) (*http.Response, error) {
+		hits++
+		return nil, context.Canceled
+	})
+	c, _ := NewClient("t", WithHTTPClient(&http.Client{Transport: rt}), WithRetry(5))
+	_, _, err := c.Users.GetUserInfo(context.Background())
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("want context.Canceled, got %v", err)
+	}
+	if hits != 1 {
+		t.Errorf("ctx 错误不应重试, hits = %d", hits)
+	}
+}
+
+// EachPage pageSize 钳制: >100 收缩到 100, 终止条件用钳制后的值.
+func TestEachPageClamp(t *testing.T) {
+	// 服务端按 100/页返回两页共 150 条 (模拟服务端钳制 page_size)
+	total := 150
+	pagesFetched := 0
+	seen := 0
+	err := EachPage(200, func(page int) ([]int, error) {
+		pagesFetched++
+		start := (page - 1) * 100
+		if start >= total {
+			return nil, nil
+		}
+		end := start + 100
+		if end > total {
+			end = total
+		}
+		out := make([]int, 0, end-start)
+		for i := start; i < end; i++ {
+			out = append(out, i)
+		}
+		return out, nil
+	}, func(items []int) error {
+		seen += len(items)
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if seen != total || pagesFetched != 2 {
+		t.Errorf("seen=%d pages=%d, want %d/2 (钳制后不应提前终止)", seen, pagesFetched, total)
+	}
+}

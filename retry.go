@@ -2,6 +2,7 @@ package cnb
 
 import (
 	"context"
+	"errors"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -18,12 +19,16 @@ var retryableStatus = map[int]bool{
 }
 
 // shouldRetry 判定一次请求是否应重试:
-//   - 网络层错误 (resp == nil): 仅幂等方法 GET/HEAD
+//   - 网络层错误 (resp == nil): 仅幂等方法 GET/HEAD (context 取消/超时除外)
 //   - 429/502/503/504: 所有方法
 //   - 其余 (含 4xx 业务错误、2xx 成功、解码错误): 不重试
 func (c *Client) shouldRetry(req *http.Request, resp *Response, err error) bool {
 	if resp == nil {
 		if err == nil {
+			return false
+		}
+		// 调用方主动终止或超时: 不重试
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 			return false
 		}
 		return req.Method == http.MethodGet || req.Method == http.MethodHead
@@ -44,7 +49,12 @@ func (c *Client) sleepBackoff(ctx context.Context, resp *Response, attempt int) 
 		}
 	}
 	if d == 0 {
-		d = 200 * time.Millisecond << attempt
+		// 钳制位移量, 避免 attempt 过大时 int64 位移溢出为负数
+		s := attempt
+		if s > 4 {
+			s = 4
+		}
+		d = 200 * time.Millisecond << s
 		if d > 3*time.Second {
 			d = 3 * time.Second
 		}

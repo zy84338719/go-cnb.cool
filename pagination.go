@@ -25,9 +25,15 @@ type ListOptions struct {
 //	})
 //
 // 服务端未返回总数, 终止条件依赖"当前页条数 < pageSize".
+// 注意: pageSize 必须与传给 Options 的 PageSize 一致; CNB 服务端将
+// page_size 钳制在 1~100, 传入超过 100 的值会被自动收缩到 100 ——
+// 此时请确保 Options.PageSize 同样为 100, 否则会因页大小不一致提前终止.
 func EachPage[T any](pageSize int, fetch func(page int) ([]T, error), fn func(items []T) error) error {
 	if pageSize <= 0 {
 		pageSize = 10
+	}
+	if pageSize > 100 {
+		pageSize = 100 // 服务端上限, 与终止条件保持一致
 	}
 	for page := 1; ; page++ {
 		items, err := fetch(page)
