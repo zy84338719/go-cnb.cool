@@ -25014,12 +25014,20 @@
         "dto.WorkspaceDetailResult": {
             "type": "object",
             "properties": {
+                "antigravity": {
+                    "description": "Antigravity 客户端 remote-ssh schema。Antigravity client remote-ssh schema.",
+                    "type": "string"
+                },
                 "codebuddy": {
                     "description": "CodeBuddy 国际版 remote-ssh schema。CodeBuddy international remote-ssh schema.",
                     "type": "string"
                 },
                 "codebuddycn": {
                     "description": "CodeBuddy 国内版 remote-ssh schema。CodeBuddy CN remote-ssh schema.",
+                    "type": "string"
+                },
+                "codebuddyweb": {
+                    "description": "CodeBuddy Web 访问 url。CodeBuddy Web access URL.",
                     "type": "string"
                 },
                 "cursor": {
@@ -25037,12 +25045,24 @@
                     "description": "选择入口页面 url。Entry page URL.",
                     "type": "string"
                 },
+                "qoder": {
+                    "description": "Qoder 客户端 remote-ssh 访问 schema 地址。Qoder client remote-ssh access schema address.",
+                    "type": "string"
+                },
                 "remoteSsh": {
                     "description": "remote-ssh 连接地址。Remote-ssh connection address.",
                     "type": "string"
                 },
                 "ssh": {
                     "description": "ssh 登录命令。SSH login command.",
+                    "type": "string"
+                },
+                "trae": {
+                    "description": "Trae 国际版 remote-ssh schema。Trae international remote-ssh schema.",
+                    "type": "string"
+                },
+                "trae-cn": {
+                    "description": "Trae 国内版 remote-ssh schema。Trae CN remote-ssh schema.",
                     "type": "string"
                 },
                 "vscode": {
@@ -25055,6 +25075,18 @@
                 },
                 "webide": {
                     "description": "WebIDE 访问 url。WebIDE access URL.",
+                    "type": "string"
+                },
+                "windsurf": {
+                    "description": "Windsurf 客户端 remote-ssh schema。Windsurf client remote-ssh schema.",
+                    "type": "string"
+                },
+                "windsurf-next": {
+                    "description": "Windsurf 预览版 remote-ssh schema。Windsurf Next remote-ssh schema.",
+                    "type": "string"
+                },
+                "zed": {
+                    "description": "Zed 客户端 ssh 访问 schema 地址。Zed client ssh access schema address.",
                     "type": "string"
                 }
             }

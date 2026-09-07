@@ -2782,26 +2782,42 @@ type WorkspaceDeleteResult struct {
 }
 
 type WorkspaceDetailResult struct {
+	// Antigravity Antigravity 客户端 remote-ssh schema。Antigravity client remote-ssh schema.
+	Antigravity string `json:"antigravity"`
 	// Codebuddy CodeBuddy 国际版 remote-ssh schema。CodeBuddy international remote-ssh schema.
 	Codebuddy string `json:"codebuddy"`
 	// Codebuddycn CodeBuddy 国内版 remote-ssh schema。CodeBuddy CN remote-ssh schema.
 	Codebuddycn string `json:"codebuddycn"`
+	// Codebuddyweb CodeBuddy Web 访问 url。CodeBuddy Web access URL.
+	Codebuddyweb string `json:"codebuddyweb"`
 	// Cursor Cursor 客户端 remote-ssh 访问 schema 地址。Cursor client remote-ssh access schema address.
 	Cursor string `json:"cursor"`
 	// Jetbrains JetBrains IDE 的 gateway schema。JetBrains IDEs gateway schema.
 	Jetbrains map[string]string `json:"jetbrains"`
 	// JumpUrl 选择入口页面 url。Entry page URL.
 	JumpUrl string `json:"jumpUrl"`
+	// Qoder Qoder 客户端 remote-ssh 访问 schema 地址。Qoder client remote-ssh access schema address.
+	Qoder string `json:"qoder"`
 	// RemoteSsh remote-ssh 连接地址。Remote-ssh connection address.
 	RemoteSsh string `json:"remoteSsh"`
 	// Ssh ssh 登录命令。SSH login command.
 	Ssh string `json:"ssh"`
+	// Trae Trae 国际版 remote-ssh schema。Trae international remote-ssh schema.
+	Trae string `json:"trae"`
+	// TraeCn Trae 国内版 remote-ssh schema。Trae CN remote-ssh schema.
+	TraeCn string `json:"trae-cn"`
 	// Vscode VSCode 客户端 remote-ssh 访问 schema 地址。VSCode client remote-ssh access schema address.
 	Vscode string `json:"vscode"`
 	// VscodeInsiders VSCode 预览版 remote-ssh schema。VSCode Insiders remote-ssh schema.
 	VscodeInsiders string `json:"vscode-insiders"`
 	// Webide WebIDE 访问 url。WebIDE access URL.
 	Webide string `json:"webide"`
+	// Windsurf Windsurf 客户端 remote-ssh schema。Windsurf client remote-ssh schema.
+	Windsurf string `json:"windsurf"`
+	// WindsurfNext Windsurf 预览版 remote-ssh schema。Windsurf Next remote-ssh schema.
+	WindsurfNext string `json:"windsurf-next"`
+	// Zed Zed 客户端 ssh 访问 schema 地址。Zed client ssh access schema address.
+	Zed string `json:"zed"`
 }
 
 type WorkspaceInfo struct {
