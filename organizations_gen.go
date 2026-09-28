@@ -146,6 +146,44 @@ func (s *OrganizationsService) DeleteOrganization(ctx context.Context, group str
 	return s.client.Do(ctx, req, nil)
 }
 
+// ListGroupBranchProtections 查询根组织保护分支规则列表。List group branch protection rules.
+//
+// 访问令牌权限: group-manage:r
+//
+// CNB API: GET /{group}/-/git-group-settings/branch-protections
+func (s *OrganizationsService) ListGroupBranchProtections(ctx context.Context, group string) ([]*BranchProtection, *Response, error) {
+	u := escapePath("/%s/-/git-group-settings/branch-protections", group)
+	req, err := s.client.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	var out []*BranchProtection
+	resp, err := s.client.Do(ctx, req, &out)
+	if err != nil {
+		return nil, resp, err
+	}
+	return out, resp, nil
+}
+
+// GetGroupBranchProtection 获取根组织保护分支规则。Get group branch protection rule.
+//
+// 访问令牌权限: group-manage:r
+//
+// CNB API: GET /{group}/-/git-group-settings/branch-protections/{id}
+func (s *OrganizationsService) GetGroupBranchProtection(ctx context.Context, group string, id string) (*BranchProtection, *Response, error) {
+	u := escapePath("/%s/-/git-group-settings/branch-protections/%s", group, id)
+	req, err := s.client.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	var out BranchProtection
+	resp, err := s.client.Do(ctx, req, &out)
+	if err != nil {
+		return nil, resp, err
+	}
+	return &out, resp, nil
+}
+
 // TransferGroup 转移组织。Transfer an organization.
 //
 // 访问令牌权限: group-manage:rw
