@@ -9,10 +9,14 @@ type ActivityCalendar struct {
 }
 
 type ActivityCalendarDate struct {
-	CommitCount int     `json:"commit_count"`
-	IssuesCount int     `json:"issues_count"`
-	PrCount     int     `json:"pr_count"`
-	Score       float64 `json:"score"`
+	// CommitCount 提交数。Commit count.
+	CommitCount int `json:"commit_count"`
+	// IssuesCount 议题数。Issue count.
+	IssuesCount int `json:"issues_count"`
+	// PrCount 合并请求数。Pull request count.
+	PrCount int `json:"pr_count"`
+	// Score 活跃度评分。Activity score.
+	Score float64 `json:"score"`
 	// ValidCrCount 有效cr数，代码评审通过且对应的pr被合入。Valid CR count: code reviews passed and corresponding PRs merged.
 	ValidCrCount int `json:"valid_cr_count"`
 	// ValidPrCount 有效pr数，已被合入，且pr具有至少一个已通过的代码评审。Valid PR count: merged PRs with at least one approved code review.
@@ -20,8 +24,9 @@ type ActivityCalendarDate struct {
 }
 
 type ActivityCreateRepoDetail struct {
+	// CreateAt 创建时间。Creation time.
 	CreateAt string `json:"create_at"`
-	// Detail 公仓转私仓或仓库被删除后为 null
+	// Detail 仓库基础信息，公仓转私仓或仓库被删除后为 null。Base repo info; null if the repo was made private or deleted.
 	Detail Repos4UserBase `json:"detail"`
 	// ExposedRepoPath activity 发生时仓库的 path，这时的 path 是可以公开的
 	ExposedRepoPath string `json:"exposed_repo_path"`
@@ -34,39 +39,54 @@ type ActivityCreateRepoDetail struct {
 }
 
 type ActivityDate struct {
-	CodeReviewCount  int                        `json:"code_review_count"`
-	CodeReviews      []ActivityRepoDetail       `json:"code_reviews"`
-	CommitCount      int                        `json:"commit_count"`
-	Commits          []ActivityRepoDetail       `json:"commits"`
-	GroupCount       int                        `json:"group_count"`
-	Groups           []ActivityJoinGroupDetail  `json:"groups"`
-	Issues           []ActivityRepoDetail       `json:"issues"`
-	IssuesCount      int                        `json:"issues_count"`
-	PrivateScore     int                        `json:"private_score"`
-	PullRequestCount int                        `json:"pull_request_count"`
-	PullRequests     []ActivityRepoDetail       `json:"pull_requests"`
-	RepoCount        int                        `json:"repo_count"`
-	Repos            []ActivityCreateRepoDetail `json:"repos"`
+	// CodeReviewCount 代码评审数。Code review count.
+	CodeReviewCount int `json:"code_review_count"`
+	// CodeReviews 代码评审动态。Code review activities.
+	CodeReviews []ActivityRepoDetail `json:"code_reviews"`
+	// CommitCount 提交数。Commit count.
+	CommitCount int `json:"commit_count"`
+	// Commits 仓库提交动态。Repo commit activities.
+	Commits []ActivityRepoDetail `json:"commits"`
+	// GroupCount 加入组织数。Joined group count.
+	GroupCount int `json:"group_count"`
+	// Groups 加入组织动态。Joined group activities.
+	Groups []ActivityJoinGroupDetail `json:"groups"`
+	// Issues 议题动态。Issue activities.
+	Issues []ActivityRepoDetail `json:"issues"`
+	// IssuesCount 议题数。Issue count.
+	IssuesCount int `json:"issues_count"`
+	// PrivateScore 私密度评分。Privacy score.
+	PrivateScore int `json:"private_score"`
+	// PullRequestCount 合并请求数。Pull request count.
+	PullRequestCount int `json:"pull_request_count"`
+	// PullRequests 合并请求动态。Pull request activities.
+	PullRequests []ActivityRepoDetail `json:"pull_requests"`
+	// RepoCount 创建仓库数。Created repo count.
+	RepoCount int `json:"repo_count"`
+	// Repos 创建仓库动态。Created repo activities.
+	Repos []ActivityCreateRepoDetail `json:"repos"`
 }
 
 type ActivityJoinGroupDetail struct {
+	// CreateAt 创建时间。Creation time.
 	CreateAt string `json:"create_at"`
-	// Detail 组织详情，组织被删后为 null
+	// Detail 组织详情，组织被删后为 null。Org detail; null if the org was deleted.
 	Detail OrganizationUnion `json:"detail"`
 	// Remark 组织别名，组织被删除后才有值。Organization alias. Only has a value after the organization is deleted.
 	Remark string `json:"remark"`
 }
 
 type ActivityRepoDetail struct {
-	// Detail 公仓转私仓或仓库被删除后为 null
+	// Detail 仓库路径详情，公仓转私仓或仓库被删除后为 null。Repo path detail; null if the repo was made private or deleted.
 	Detail ActivitySlugDetail `json:"detail"`
 	// ExposedRepoPath activity 发生时仓库的 path，这时的 path 是可以公开的
 	ExposedRepoPath string `json:"exposed_repo_path"`
 	// Freeze 仓库是否封禁。Whether the repository is banned.
 	Freeze bool `json:"freeze"`
 	// RepoUnaccessible 仓库是否不可访问（公仓转私仓或仓库被删除后不可访问）。Whether the repo is inaccessible (public→private or deleted).
-	RepoUnaccessible bool    `json:"repo_unaccessible"`
-	Time             float64 `json:"time"`
+	RepoUnaccessible bool `json:"repo_unaccessible"`
+	// Time 动态发生时间。Activity time.
+	Time float64 `json:"time"`
 	// VisibilityLevel 仓库可见性。Repository visibility.
 	VisibilityLevel Visibility `json:"visibility_level"`
 }
@@ -270,6 +290,19 @@ type BuildCommonResult struct {
 	Message string `json:"message"`
 }
 
+type BuildLogNpc struct {
+	// Match NPC 匹配文本。NPC match text.
+	Match string `json:"match"`
+	// Name NPC 角色名。NPC role name.
+	Name string `json:"name"`
+	// Sha 触发 NPC 事件时其所属仓库默认分支的 sha。Default branch sha of the NPC repo when triggered.
+	Sha string `json:"sha"`
+	// Slug NPC 所属仓库 slug。Slug of the NPC's repository.
+	Slug string `json:"slug"`
+	// WorkMode 是否开启工作模式。Whether work mode is enabled.
+	WorkMode bool `json:"workMode"`
+}
+
 type BuildLogsResult struct {
 	// Data 构建数据列表。Build data list.
 	Data []LogInfo `json:"data"`
@@ -324,6 +357,8 @@ type BuildStageResult struct {
 }
 
 type BuildStatusResult struct {
+	// Npc 发起该构建的 NPC 信息（若由 NPC 触发）。NPC info that triggered this build (if any).
+	Npc BuildLogNpc `json:"npc"`
 	// PipelinesStatus 流水线的状态。Pipeline status.
 	PipelinesStatus map[string]PipelineStatus `json:"pipelinesStatus"`
 	// Status 构建状态。Build status.
@@ -1023,8 +1058,10 @@ type GetBadgeResult struct {
 
 // GetRankResult 获取排行榜返回结果，包含更新时间与排名列表。 Get rank result, including update time and rank list.
 type GetRankResult struct {
-	RankList  []RankDetailWithIncr `json:"rank_list"`
-	UpdatedAt string               `json:"updated_at"`
+	// RankList 仓库排名详情列表。Repository rank detail list.
+	RankList []RankDetailWithIncr `json:"rank_list"`
+	// UpdatedAt 榜单更新时间。Leaderboard update time.
+	UpdatedAt string `json:"updated_at"`
 }
 
 type GroupSettingReq struct {
@@ -1042,6 +1079,8 @@ type GroupSettingReq struct {
 	ShowPrivateRepoWatermark *int `json:"show_private_repo_watermark,omitempty"`
 	// Values SettingValue 组织设置值，多个选项，用逗号拼接。可选值来自 SettingNamesArray 的值，e.g. disable_organization_readme,cloud_native_dev_only
 	Values *string `json:"values,omitempty"`
+	// VisitorNpcPriceLimit VisitorNpcPriceLimit 访客可用 NPC 价格上限，量纲同 NpcPriceLimit（毫元/MTok），0 表示不对访客额外管控（跟随 NpcPriceLimit）。 访客口径与「仅允许仓库成员@NPC」一致：与根组织树无任何成员/外部协作者关系的用户。 仓库成员（含最低 Guest 角色）、仓库外部协作者、组织成员、兄弟仓成员均不算访客。 Visitor NPC price limit, same unit as NpcPriceLimit (milli-money/MTok), 0 means no extra control for visitors.
+	VisitorNpcPriceLimit *int `json:"visitor_npc_price_limit,omitempty"`
 }
 
 type HelmProvenance struct {
@@ -1061,6 +1100,14 @@ type HelmProvenance struct {
 	Sn string `json:"sn"`
 	// Tag Tag 制品标签名.
 	Tag string `json:"tag"`
+}
+
+type IDTokenRequest struct {
+	Aud *string `json:"aud,omitempty"`
+}
+
+type IDTokenResponse struct {
+	IdToken string `json:"id_token"`
 }
 
 type InheritMembersUser struct {
@@ -1622,6 +1669,8 @@ type OrganizationSettingWithParent struct {
 	RootValues               SettingValue `json:"root_values"`
 	ShowPrivateRepoWatermark int          `json:"show_private_repo_watermark"`
 	Values                   SettingValue `json:"values"`
+	// VisitorNpcPriceLimit 访客可用 NPC 价格上限，量纲同上（毫元/MTok），0 表示不对访客额外管控（跟随 NpcPriceLimit）。 由根组织统一管控，子组织不可单独配置，故无需 Root 副本（其值恒等于本字段）。
+	VisitorNpcPriceLimit int `json:"visitor_npc_price_limit"`
 }
 
 // OrganizationUnion 用户查询的完整组织信息，包含组织基本信息、子资源统计与置顶信息。 Full organization info for user queries, including org basic info, sub-resource counts and pin info.
@@ -2052,13 +2101,20 @@ type RepoPatch struct {
 }
 
 type RepoSecurityOverview struct {
-	CodeIssue         CodeIssueSummary     `json:"code_issue"`
-	CodeLicense       CodeLicenseOverview  `json:"code_license"`
-	CodeSbom          CodeSbomOverview     `json:"code_sbom"`
-	CodeSensitive     CodeSensitiveSummary `json:"code_sensitive"`
-	CodeVulnerability CodeVulOverview      `json:"code_vulnerability"`
-	RiskCnt           RepoSecurityRiskCnt  `json:"risk_cnt"`
-	SkillScan         SkillScanOverview    `json:"skill_scan"`
+	// CodeIssue 源码扫描问题概览。Source code scanning issue overview.
+	CodeIssue CodeIssueSummary `json:"code_issue"`
+	// CodeLicense 代码许可证概览。Code license overview.
+	CodeLicense CodeLicenseOverview `json:"code_license"`
+	// CodeSbom 代码 SBOM 概览。Code SBOM overview.
+	CodeSbom CodeSbomOverview `json:"code_sbom"`
+	// CodeSensitive 代码敏感信息概览。Code sensitive information overview.
+	CodeSensitive CodeSensitiveSummary `json:"code_sensitive"`
+	// CodeVulnerability 代码漏洞概览。Code vulnerability overview.
+	CodeVulnerability CodeVulOverview `json:"code_vulnerability"`
+	// RiskCnt 风险数量概览。Risk count overview.
+	RiskCnt RepoSecurityRiskCnt `json:"risk_cnt"`
+	// SkillScan Skill 扫描概览。Skill scanning overview.
+	SkillScan SkillScanOverview `json:"skill_scan"`
 }
 
 type RepoSecurityRiskCnt struct {
@@ -2302,35 +2358,42 @@ type Slugs struct {
 
 type SpecialAmount struct {
 	// ComputeBuildCorehour 云原生构建cpu核时。Cloud native build CPU core-hours.
-	ComputeBuildCorehour int    `json:"compute_build_corehour"`
-	ComputeBuildDesc     string `json:"compute_build_desc"`
+	ComputeBuildCorehour int `json:"compute_build_corehour"`
+	// ComputeBuildDesc 云原生构建 CPU 额度的说明文案。Description of the cloud-native build CPU quota.
+	ComputeBuildDesc string `json:"compute_build_desc"`
 	// ComputeBuildExpire null 即永久有效。Null = permanent.
 	ComputeBuildExpire string `json:"compute_build_expire"`
 	// ComputeBuildGpuCorehour 云原生构建gpu核时。Cloud native build GPU core-hours.
-	ComputeBuildGpuCorehour int    `json:"compute_build_gpu_corehour"`
-	ComputeBuildGpuDesc     string `json:"compute_build_gpu_desc"`
+	ComputeBuildGpuCorehour int `json:"compute_build_gpu_corehour"`
+	// ComputeBuildGpuDesc 云原生构建 GPU 额度的说明文案。Description of the cloud-native build GPU quota.
+	ComputeBuildGpuDesc string `json:"compute_build_gpu_desc"`
 	// ComputeBuildGpuExpire null 即永久有效。Null = permanent.
 	ComputeBuildGpuExpire string `json:"compute_build_gpu_expire"`
 	// ComputeDevelopCorehour 云原生开发cpu核时。Cloud native dev CPU core-hours.
-	ComputeDevelopCorehour int    `json:"compute_develop_corehour"`
-	ComputeDevelopDesc     string `json:"compute_develop_desc"`
+	ComputeDevelopCorehour int `json:"compute_develop_corehour"`
+	// ComputeDevelopDesc 云原生开发 CPU 额度的说明文案。Description of the cloud-native development CPU quota.
+	ComputeDevelopDesc string `json:"compute_develop_desc"`
 	// ComputeDevelopExpire null 即永久有效。Null = permanent.
 	ComputeDevelopExpire string `json:"compute_develop_expire"`
 	// ComputeDevelopGpuCorehour 云原生开发gpu核时。Cloud native dev GPU core-hours.
-	ComputeDevelopGpuCorehour int    `json:"compute_develop_gpu_corehour"`
-	ComputeDevelopGpuDesc     string `json:"compute_develop_gpu_desc"`
+	ComputeDevelopGpuCorehour int `json:"compute_develop_gpu_corehour"`
+	// ComputeDevelopGpuDesc 云原生开发 GPU 额度的说明文案。Description of the cloud-native development GPU quota.
+	ComputeDevelopGpuDesc string `json:"compute_develop_gpu_desc"`
 	// ComputeDevelopGpuExpire null 即永久有效。Null = permanent.
 	ComputeDevelopGpuExpire string `json:"compute_develop_gpu_expire"`
 	// Credit 模型调用量的 Credit。Credit for model invocations.
-	Credit     int    `json:"credit"`
+	Credit int `json:"credit"`
+	// CreditDesc Credit 额度的说明文案。Description of the credit quota.
 	CreditDesc string `json:"credit_desc"`
 	// CreditExpire null 即永久有效。Null = permanent.
-	CreditExpire   string `json:"credit_expire"`
+	CreditExpire string `json:"credit_expire"`
+	// StorageGitDesc Git 存储额度的说明文案。Description of the Git storage quota.
 	StorageGitDesc string `json:"storage_git_desc"`
 	// StorageGitExpire null 即永久有效。Null = permanent.
 	StorageGitExpire string `json:"storage_git_expire"`
 	// StorageGitGib git存储空间。Git storage space.
-	StorageGitGib     int    `json:"storage_git_gib"`
+	StorageGitGib int `json:"storage_git_gib"`
+	// StorageObjectDesc 对象存储额度的说明文案。Description of the object storage quota.
 	StorageObjectDesc string `json:"storage_object_desc"`
 	// StorageObjectExpire null 即永久有效。Null = permanent.
 	StorageObjectExpire string `json:"storage_object_expire"`
@@ -2782,26 +2845,42 @@ type WorkspaceDeleteResult struct {
 }
 
 type WorkspaceDetailResult struct {
+	// Antigravity Antigravity 客户端 remote-ssh schema。Antigravity client remote-ssh schema.
+	Antigravity string `json:"antigravity"`
 	// Codebuddy CodeBuddy 国际版 remote-ssh schema。CodeBuddy international remote-ssh schema.
 	Codebuddy string `json:"codebuddy"`
 	// Codebuddycn CodeBuddy 国内版 remote-ssh schema。CodeBuddy CN remote-ssh schema.
 	Codebuddycn string `json:"codebuddycn"`
+	// Codebuddyweb CodeBuddy Web 访问 url。CodeBuddy Web access URL.
+	Codebuddyweb string `json:"codebuddyweb"`
 	// Cursor Cursor 客户端 remote-ssh 访问 schema 地址。Cursor client remote-ssh access schema address.
 	Cursor string `json:"cursor"`
 	// Jetbrains JetBrains IDE 的 gateway schema。JetBrains IDEs gateway schema.
 	Jetbrains map[string]string `json:"jetbrains"`
 	// JumpUrl 选择入口页面 url。Entry page URL.
 	JumpUrl string `json:"jumpUrl"`
+	// Qoder Qoder 客户端 remote-ssh 访问 schema 地址。Qoder client remote-ssh access schema address.
+	Qoder string `json:"qoder"`
 	// RemoteSsh remote-ssh 连接地址。Remote-ssh connection address.
 	RemoteSsh string `json:"remoteSsh"`
 	// Ssh ssh 登录命令。SSH login command.
 	Ssh string `json:"ssh"`
+	// Trae Trae 国际版 remote-ssh schema。Trae international remote-ssh schema.
+	Trae string `json:"trae"`
+	// TraeCn Trae 国内版 remote-ssh schema。Trae CN remote-ssh schema.
+	TraeCn string `json:"trae-cn"`
 	// Vscode VSCode 客户端 remote-ssh 访问 schema 地址。VSCode client remote-ssh access schema address.
 	Vscode string `json:"vscode"`
 	// VscodeInsiders VSCode 预览版 remote-ssh schema。VSCode Insiders remote-ssh schema.
 	VscodeInsiders string `json:"vscode-insiders"`
 	// Webide WebIDE 访问 url。WebIDE access URL.
 	Webide string `json:"webide"`
+	// Windsurf Windsurf 客户端 remote-ssh schema。Windsurf client remote-ssh schema.
+	Windsurf string `json:"windsurf"`
+	// WindsurfNext Windsurf 预览版 remote-ssh schema。Windsurf Next remote-ssh schema.
+	WindsurfNext string `json:"windsurf-next"`
+	// Zed Zed 客户端 ssh 访问 schema 地址。Zed client ssh access schema address.
+	Zed string `json:"zed"`
 }
 
 type WorkspaceInfo struct {
