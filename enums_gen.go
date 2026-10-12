@@ -265,4 +265,6 @@ const (
 	SettingValueOnlyRepoMemberCanMentionNPC SettingValue = "only_repo_member_can_mention_npc"
 	// SettingValueAllowNpcCrossRepo allowNpcCrossRepo 开启后，NPC 不再局限于当前仓库，可以在根组织下的所有仓库之间自由协作，自动处理跨仓任务。
 	SettingValueAllowNpcCrossRepo SettingValue = "allow_npc_cross_repo"
+	// SettingValueAllowCronCrossRepo allowCronCrossRepo 开启后，定时任务不再局限于当前仓库，可以在根组织下的所有仓库之间自由访问，执行跨仓任务。
+	SettingValueAllowCronCrossRepo SettingValue = "allow_cron_cross_repo"
 )

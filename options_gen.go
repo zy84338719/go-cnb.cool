@@ -322,9 +322,9 @@ type GetMissionViewConfigOptions struct {
 // GetBuildLogsOptions 查询流水线构建列表。List pipeline builds. 的查询参数.
 type GetBuildLogsOptions struct {
 	ListOptions `json:",inline"`
-	// CreateTime 起始日期，格式 "YYYY-MM-DD"，例如 "2024-12-01"。Start date in "YYYY-MM-DD" format, e.g. "2024-12-01"
+	// CreateTime 起始日期，格式 "YYYY-MM-DD"，例如 "2024-12-01"。 Start date in "YYYY-MM-DD" format, e.g. "2024-12-01".
 	CreateTime *string `json:"createTime,omitempty"`
-	// EndTime 结束日期，格式 "YYYY-MM-DD"，例如 "2024-12-01"。End date in "YYYY-MM-DD" format, e.g. "2024-12-01"
+	// EndTime 结束日期，格式 "YYYY-MM-DD"，例如 "2024-12-01"。End date in "YYYY-MM-DD" format, e.g. "2024-12-01".
 	EndTime *string `json:"endTime,omitempty"`
 	// Event 事件名称，例如 "push"。Event name, e.g. "push"
 	Event *string `json:"event,omitempty"`
@@ -444,6 +444,12 @@ type ListIssuesOptions struct {
 	CloseTimeEnd *string `json:"close_time_end,omitempty"`
 	// OrderBy Issue排序字段，-前缀表示倒序。可选值：`created_at`,`-created_at`,`-updated_at`,`-last_acted_at`
 	OrderBy *string `json:"order_by,omitempty"`
+}
+
+// GetIssuesInBatchOptions 批量查询 Issue。Batch get issues. 的查询参数.
+type GetIssuesInBatchOptions struct {
+	// Numbers Issue 编号列表，多个编号用英文逗号分隔，一次最多 100 个。示例：`?numbers=1,2,3`。Issue number list, comma-separated; up to 100 per request. Example: `?numbers=1,2,3`.
+	Numbers []int `json:"numbers,omitempty"`
 }
 
 // ListIssueActivitiesOptions 查询 Issue 动态。List issue activities. 的查询参数.
@@ -660,6 +666,16 @@ type ListCodeIssueOpenAPIOptions struct {
 	IssueRule *string `json:"issue_rule,omitempty"`
 	// RiskLevel 严重程度，用于筛选特定风险等级的问题。枚举值：`info`, `warning`, `error`, `fatal`, `all`
 	RiskLevel *string `json:"risk_level,omitempty"`
+}
+
+// GetRepoContributorSimplyOptions 查询贡献者缩略信息。Get contributor brief info. 的查询参数.
+type GetRepoContributorSimplyOptions struct {
+	// Limit 查询结果数量限制，当limit小于0时，默认为15。格式：[0,1000]
+	Limit *int `json:"limit,omitempty"`
+	// ExcludeExternalUsers 是否排除外部用户。示例值：`true`,`false`
+	ExcludeExternalUsers *bool `json:"exclude_external_users,omitempty"`
+	// Keyword 按用户名或邮箱模糊搜索。Fuzzy search by username or email.
+	Keyword *string `json:"keyword,omitempty"`
 }
 
 // GetRepoContributorTrendOptions 查询贡献者趋势数据。Get contributor trend data. 的查询参数.
