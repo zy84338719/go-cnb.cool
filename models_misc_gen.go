@@ -166,8 +166,11 @@ type MissionFilterFrom struct {
 	Selectors []MissionFilter `json:"selectors,omitempty"`
 }
 
+// MissionMissionResourceDtoWebUserInfo 任务集资源中内嵌的用户精简信息。 Condensed user info embedded in mission resources.
 type MissionMissionResourceDtoWebUserInfo struct {
+	// Nickname 用户昵称。User nickname.
 	Nickname string `json:"nickname"`
+	// Username 用户名。Username.
 	Username string `json:"username"`
 }
 
@@ -180,8 +183,6 @@ type ArtifactTag struct {
 	Conan []CommonRegistryTag `json:"conan"`
 	// Docker Docker 制品标签列表。Docker tags.
 	Docker []ContainerTag `json:"docker"`
-	// Dockermodel Docker 模型制品标签列表。Docker model tags.
-	Dockermodel []DockerModelTag `json:"dockermodel"`
 	// Generic 通用制品标签列表。Generic tags.
 	Generic []CommonRegistryTag `json:"generic"`
 	// Helm Helm 制品标签列表。Helm tags.
@@ -192,6 +193,8 @@ type ArtifactTag struct {
 	Npm []CommonRegistryTag `json:"npm"`
 	// Nuget Nuget 制品标签列表。Nuget tags.
 	Nuget []CommonRegistryTag `json:"nuget"`
+	// Oci OCI 制品标签列表。OCI tags.
+	Oci []OCITag `json:"oci"`
 	// Ohpm Ohpm 制品标签列表。Ohpm tags.
 	Ohpm []CommonRegistryTag `json:"ohpm"`
 	// Package 制品标识。Artifact identifier.
