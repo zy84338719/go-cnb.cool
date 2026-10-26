@@ -72,13 +72,13 @@ type ListPublicReposOptions struct {
 	Key *string `json:"key,omitempty"`
 	// Flags 仓库类型标记，逗号分隔。Repository type flags, comma separated 可选值: KnowledgeBase, NPC, Skills.
 	Flags *string `json:"flags,omitempty"`
-	// FlagsMatch flags 多值匹配模式。Flags match mode when multiple flags provided 可选值: intersection, union.
+	// FlagsMatch flags 多值匹配：intersection 全部命中、union 任一命中。Multi-flag match mode. 可选值: intersection, union.
 	FlagsMatch *string `json:"flags_match,omitempty"`
-	// OrderBy 排序类型，默认last_updated_at. Sort type, defaults to last_updated_at. 可选值: created_at, last_updated_at, stars, forks.
+	// OrderBy 排序类型；仅在 key 为空时生效。Sort type; effective only when key is empty. 可选值: created_at, last_updated_at, stars, forks.
 	OrderBy *string `json:"order_by,omitempty"`
 	// Desc 排序顺序。Sort order.
 	Desc *bool `json:"desc,omitempty"`
-	// TopN 排行前N位，默认10，最大值100。Top N in ranking, default 10, max 100.
+	// TopN 排行前N位，默认10，最大值100。Top N, default 10, max 100.
 	TopN *int `json:"topN,omitempty"`
 }
 
@@ -319,12 +319,12 @@ type GetMissionViewConfigOptions struct {
 	Id *string `json:"id,omitempty"`
 }
 
-// GetBuildLogsOptions 查询流水线构建列表。List pipeline builds. 的查询参数.
+// GetBuildLogsOptions 查询构建历史。List build history. 的查询参数.
 type GetBuildLogsOptions struct {
 	ListOptions `json:",inline"`
-	// CreateTime 起始日期，格式 "YYYY-MM-DD"，例如 "2024-12-01"。Start date in "YYYY-MM-DD" format, e.g. "2024-12-01"
+	// CreateTime 起始日期，格式 "YYYY-MM-DD"，例如 "2024-12-01"。 Start date in "YYYY-MM-DD" format, e.g. "2024-12-01".
 	CreateTime *string `json:"createTime,omitempty"`
-	// EndTime 结束日期，格式 "YYYY-MM-DD"，例如 "2024-12-01"。End date in "YYYY-MM-DD" format, e.g. "2024-12-01"
+	// EndTime 结束日期，格式 "YYYY-MM-DD"，例如 "2024-12-01"。End date in "YYYY-MM-DD" format, e.g. "2024-12-01".
 	EndTime *string `json:"endTime,omitempty"`
 	// Event 事件名称，例如 "push"。Event name, e.g. "push"
 	Event *string `json:"event,omitempty"`
@@ -338,6 +338,8 @@ type GetBuildLogsOptions struct {
 	Status *string `json:"status,omitempty"`
 	// TargetRef 目标分支名称，例如 "main"。Target branch name, e.g. "main"
 	TargetRef *string `json:"targetRef,omitempty"`
+	// Title 构建标题关键字；无标题的构建不会命中。Build title keyword; untitled builds won't match.
+	Title *string `json:"title,omitempty"`
 	// UserId 用户ID。User ID.
 	UserId *string `json:"userId,omitempty"`
 	// UserName 用户名。Username.
@@ -444,6 +446,12 @@ type ListIssuesOptions struct {
 	CloseTimeEnd *string `json:"close_time_end,omitempty"`
 	// OrderBy Issue排序字段，-前缀表示倒序。可选值：`created_at`,`-created_at`,`-updated_at`,`-last_acted_at`
 	OrderBy *string `json:"order_by,omitempty"`
+}
+
+// GetIssuesInBatchOptions 批量查询 Issue。Batch get issues. 的查询参数.
+type GetIssuesInBatchOptions struct {
+	// Numbers Issue 编号列表，多个编号用英文逗号分隔，一次最多 100 个。示例：`?numbers=1,2,3`。Issue number list, comma-separated; up to 100 per request. Example: `?numbers=1,2,3`.
+	Numbers []int `json:"numbers,omitempty"`
 }
 
 // ListIssueActivitiesOptions 查询 Issue 动态。List issue activities. 的查询参数.
@@ -662,6 +670,16 @@ type ListCodeIssueOpenAPIOptions struct {
 	RiskLevel *string `json:"risk_level,omitempty"`
 }
 
+// GetRepoContributorSimplyOptions 查询贡献者缩略信息。Get contributor brief info. 的查询参数.
+type GetRepoContributorSimplyOptions struct {
+	// Limit 查询结果数量限制，当limit小于0时，默认为15。格式：[0,1000]
+	Limit *int `json:"limit,omitempty"`
+	// ExcludeExternalUsers 是否排除外部用户。示例值：`true`,`false`
+	ExcludeExternalUsers *bool `json:"exclude_external_users,omitempty"`
+	// Keyword 按用户名或邮箱模糊搜索。Fuzzy search by username or email.
+	Keyword *string `json:"keyword,omitempty"`
+}
+
 // GetRepoContributorTrendOptions 查询贡献者趋势数据。Get contributor trend data. 的查询参数.
 type GetRepoContributorTrendOptions struct {
 	// Limit 查询结果数量限制，当limit小于0时，默认为15。格式：[0,100]
@@ -729,7 +747,7 @@ type UpdateOutsideCollaboratorsOptions struct {
 // ListPackagesOptions 查询制品列表。 List all packages. 的查询参数.
 type ListPackagesOptions struct {
 	ListOptions `json:",inline"`
-	// Type 制品类型。Type. 可选值: all, docker, helm, dockermodel, maven, npm, ohpm, pypi, nuget, composer, conan, cargo.
+	// Type 制品类型。Type. 可选值: all, docker, helm, oci, maven, npm, ohpm, pypi, nuget, composer, conan, cargo.
 	Type *string `json:"type,omitempty"`
 	// Ordering 顺序类型。Ordering type. 可选值: pull_count, last_push_at, name_ascend, name_descend.
 	Ordering *string `json:"ordering,omitempty"`

@@ -185,8 +185,6 @@ type CommitAsset struct {
 	ContentType string `json:"content_type"`
 	// CreatedAt 附件创建时间。Attachment created at.
 	CreatedAt string `json:"created_at"`
-	// DownloadCount 下载次数。Download count.
-	DownloadCount int `json:"download_count"`
 	// HashAlgo 附件哈希算法。Attachment hash algorithm.
 	HashAlgo string `json:"hash_algo"`
 	// HashValue 附件哈希值。Attachment hash.
@@ -563,7 +561,7 @@ type MergePullRequest struct {
 	CommitTitle *string `json:"commit_title,omitempty"`
 	// Force 是否强制合并。Whether to force merge, only allowed for repository owner or admin.
 	Force *bool `json:"force,omitempty"`
-	// MergeStyle 合并提交方式。可选值：`merge`,`squash`,`rebase`
+	// MergeStyle 合并提交方式。可选值：`merge`,`squash`,`rebase`, `fast_forward`
 	MergeStyle *string `json:"merge_style,omitempty"`
 }
 
@@ -1106,8 +1104,6 @@ type ReleaseAsset struct {
 	ContentType string `json:"content_type"`
 	// CreatedAt 创建时间。Created at.
 	CreatedAt string `json:"created_at"`
-	// DownloadCount 下载次数。Download count.
-	DownloadCount int `json:"download_count"`
 	// HashAlgo 附件哈希算法。Attachment hash algorithm.
 	HashAlgo string `json:"hash_algo"`
 	// HashValue 附件哈希值。Attachment hash.
@@ -1137,6 +1133,12 @@ type ApiRepo struct {
 	Path string `json:"path"`
 	// WebUrl 仓库的Web访问地址。
 	WebUrl string `json:"web_url"`
+}
+
+type RepoContribSimply struct {
+	Meta          Meta                    `json:"meta"`
+	Top100Contrib []UserContributorSimply `json:"top_100_contrib"`
+	Total         int                     `json:"total"`
 }
 
 type RepoContribTrend struct {
@@ -1250,6 +1252,12 @@ type TreeEntry struct {
 	Sha string `json:"sha"`
 	// Type 对象类型。枚举值：`tree`,`blob`,`link`,`submodule`
 	Type string `json:"type"`
+}
+
+type UserContributorSimply struct {
+	CommitCount int    `json:"commit_count"`
+	Email       string `json:"email"`
+	UserName    string `json:"user_name"`
 }
 
 type UserInfo struct {
