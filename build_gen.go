@@ -26,7 +26,7 @@ func (s *BuildService) BuildCrontabSync(ctx context.Context, repo string, branch
 	return &out, resp, nil
 }
 
-// GetBuildLogs 查询流水线构建列表。List pipeline builds.
+// GetBuildLogs 查询构建历史。List build history.
 //
 // 访问令牌权限: repo-cnb-history:r
 //
@@ -52,7 +52,7 @@ func (s *BuildService) GetBuildLogs(ctx context.Context, repo string, opts *GetB
 	return &out, resp, nil
 }
 
-// GetBuildAiAudit 查询流水线 AI 用量汇总。Get pipeline AI usage summary.
+// GetBuildAiAudit 查询 AI 用量汇总。List AI usage by model.
 //
 // 访问令牌权限: repo-cnb-history:r
 //
@@ -71,7 +71,7 @@ func (s *BuildService) GetBuildAiAudit(ctx context.Context, repo string, sn stri
 	return &out, resp, nil
 }
 
-// GetBuildAiRequestDetail 查询单条 AI 请求详情。Get a single AI request detail.
+// GetBuildAiRequestDetail 查询 AI 请求详情。Get AI request detail.
 //
 // 访问令牌权限: repo-cnb-history:r
 //
@@ -90,7 +90,7 @@ func (s *BuildService) GetBuildAiRequestDetail(ctx context.Context, repo string,
 	return &out, resp, nil
 }
 
-// GetBuildAiRequest 查询 AI 请求明细。List AI request entries.
+// GetBuildAiRequest 查询 AI 请求明细。List AI requests.
 //
 // 访问令牌权限: repo-cnb-history:r
 //
@@ -109,7 +109,7 @@ func (s *BuildService) GetBuildAiRequest(ctx context.Context, repo string, sn st
 	return &out, resp, nil
 }
 
-// GetBuildStage 查询 Stage 详情。Get pipeline stage detail.
+// GetBuildStage 查询阶段详情。Get stage detail.
 //
 // 访问令牌权限: repo-cnb-trigger:r
 //
@@ -128,7 +128,7 @@ func (s *BuildService) GetBuildStage(ctx context.Context, repo string, sn string
 	return &out, resp, nil
 }
 
-// BuildLogsDelete 删除流水线日志内容。Delete pipeline logs content.
+// BuildLogsDelete 删除构建日志。Delete build logs.
 //
 // 访问令牌权限: repo-cnb-trigger:rw
 //
@@ -147,7 +147,7 @@ func (s *BuildService) BuildLogsDelete(ctx context.Context, repo string, sn stri
 	return &out, resp, nil
 }
 
-// BuildRunnerDownloadLog 流水线 Runner 日志下载。Pipeline runner log download.
+// BuildRunnerDownloadLog 下载 Runner 日志。Download runner logs.
 //
 // 访问令牌权限: repo-cnb-trigger:r
 //
@@ -161,7 +161,7 @@ func (s *BuildService) BuildRunnerDownloadLog(ctx context.Context, repo string, 
 	return s.client.Do(ctx, req, nil)
 }
 
-// StartBuild 开始一个构建。Start a build.
+// StartBuild 触发构建。Trigger a build.
 //
 // 访问令牌权限: repo-cnb-trigger:rw
 //
@@ -180,7 +180,7 @@ func (s *BuildService) StartBuild(ctx context.Context, repo string, body StartBu
 	return &out, resp, nil
 }
 
-// GetBuildStatus 查询流水线构建状态。Get pipeline build status.
+// GetBuildStatus 查询构建状态。Get build status.
 //
 // 访问令牌权限: repo-cnb-trigger:r
 //
@@ -199,7 +199,7 @@ func (s *BuildService) GetBuildStatus(ctx context.Context, repo string, sn strin
 	return &out, resp, nil
 }
 
-// StopBuild 停止一个构建。Stop a build.
+// StopBuild 停止构建。Stop a build.
 //
 // 访问令牌权限: repo-cnb-trigger:rw
 //

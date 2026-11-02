@@ -156,10 +156,8 @@ const (
 	PackageTypeDocker PackageType = "docker"
 	// PackageTypeHelm PackageTypeHelm helm chart 制品，由 chart 兼容
 	PackageTypeHelm PackageType = "helm"
-	// PackageTypeDockerModel PackageTypeDockerModel docker model 制品
-	PackageTypeDockerModel PackageType = "docker-model"
-	// PackageTypeDockerModelAlias PackageTypeDockerModelAlias docker model 制品别名
-	PackageTypeDockerModelAlias PackageType = "dockermodel"
+	// PackageTypeOCI PackageTypeOCI oci 制品
+	PackageTypeOCI PackageType = "oci"
 	// PackageTypeNpm PackageTypeNpm npm 制品
 	PackageTypeNpm PackageType = "npm"
 	// PackageTypeMaven PackageTypeMaven maven 制品
@@ -265,4 +263,14 @@ const (
 	SettingValueOnlyRepoMemberCanMentionNPC SettingValue = "only_repo_member_can_mention_npc"
 	// SettingValueAllowNpcCrossRepo allowNpcCrossRepo 开启后，NPC 不再局限于当前仓库，可以在根组织下的所有仓库之间自由协作，自动处理跨仓任务。
 	SettingValueAllowNpcCrossRepo SettingValue = "allow_npc_cross_repo"
+	// SettingValueAllowCronCrossRepo allowCronCrossRepo 开启后，定时任务不再局限于当前仓库，可以在根组织下的所有仓库之间自由访问，执行跨仓任务。
+	SettingValueAllowCronCrossRepo SettingValue = "allow_cron_cross_repo"
+	// SettingValueAllowUncredibleCrossRepo allowUncredibleCrossRepo 开启后，不可信事件（PR、Issue、评论）不再局限于当前仓库，可以在根组织下的所有仓库之间自由访问。
+	SettingValueAllowUncredibleCrossRepo SettingValue = "allow_uncredible_cross_repo"
+	// SettingValueDisableRepoEventAutoTrigger disableRepoEventAutoTrigger 置位后，根组织下全部仓库的事件均不自动触发云原生构建（组织级总开关，仓库开关不可绕过；刻意用「禁用」语义：未置位 = 未启用该管控 = 放行，保证存量组织的自动触发行为不变）。
+	SettingValueDisableRepoEventAutoTrigger SettingValue = "disable_repo_event_auto_trigger"
+	// SettingValueDisableRepoCronAutoTrigger disableRepoCronAutoTrigger 置位后，根组织下全部仓库的定时任务均不自动触发云原生构建（组织级总开关，仓库开关不可绕过）。
+	SettingValueDisableRepoCronAutoTrigger SettingValue = "disable_repo_cron_auto_trigger"
+	// SettingValueDisableRepoNpcAutoTrigger disableRepoNpcAutoTrigger 置位后，根组织下全部仓库均不允许 NPC 自动触发云原生构建（组织级总开关，仓库开关不可绕过）。
+	SettingValueDisableRepoNpcAutoTrigger SettingValue = "disable_repo_npc_auto_trigger"
 )

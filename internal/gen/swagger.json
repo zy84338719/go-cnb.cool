@@ -476,7 +476,7 @@
                         ],
                         "type": "string",
                         "default": "intersection",
-                        "description": "flags 多值匹配模式。Flags match mode when multiple flags provided",
+                        "description": "flags 多值匹配：intersection 全部命中、union 任一命中。Multi-flag match mode.",
                         "name": "flags_match",
                         "in": "query"
                     },
@@ -488,7 +488,7 @@
                             "forks"
                         ],
                         "type": "string",
-                        "description": "排序类型，默认last_updated_at. Sort type, defaults to last_updated_at.",
+                        "description": "排序类型；仅在 key 为空时生效。Sort type; effective only when key is empty.",
                         "name": "order_by",
                         "in": "query"
                     },
@@ -502,7 +502,7 @@
                     {
                         "type": "integer",
                         "default": 10,
-                        "description": "排行前N位，默认10，最大值100。Top N in ranking, default 10, max 100.",
+                        "description": "排行前N位，默认10，最大值100。Top N, default 10, max 100.",
                         "name": "topN",
                         "in": "query"
                     }
@@ -2209,6 +2209,304 @@
                 ]
             }
         },
+        "/{group}/-/git-group-settings/branch-protections": {
+            "get": {
+                "description": "查询根组织中配置的所有保护分支规则列表。返回每条规则的匹配模式、合并要求、推送管控等信息。\nList all configured branch protection rules under the root organization.\nReturns the match pattern, merge requirements, push restrictions, etc. for each rule.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \ngroup-manage:r",
+                "produces": [
+                    "application/vnd.cnb.api+json"
+                ],
+                "tags": [
+                    "Organizations"
+                ],
+                "summary": "查询根组织保护分支规则列表。List group branch protection rules.",
+                "operationId": "ListGroupBranchProtections",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "组织名称。仅允许在根组织节点操作。Group name. Only allowed at the root organization node.",
+                        "name": "group",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/api.BranchProtection"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "在根组织下创建一条保护分支规则，用于限制推送与合并、防止分支被删除。每个组织最多可创建 10 条规则。\nCreate a branch protection rule under the root organization. Up to 10 rules per organization.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \ngroup-manage:rw",
+                "consumes": [
+                    "application/vnd.cnb.api+json"
+                ],
+                "produces": [
+                    "application/vnd.cnb.api+json"
+                ],
+                "tags": [
+                    "Organizations"
+                ],
+                "summary": "创建根组织保护分支规则。Create group branch protection rule.",
+                "operationId": "PostGroupBranchProtection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "组织名称。仅允许在根组织节点操作。Group name. Only allowed at the root organization node.",
+                        "name": "group",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "保护分支规则配置。Branch protection rule configuration.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.BranchProtection"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/{group}/-/git-group-settings/branch-protections/{id}": {
+            "get": {
+                "description": "根据规则 ID 获取根组织保护分支规则的详细配置，包括匹配模式、合并要求、推送管控等。\nGet detailed configuration of a specific branch protection rule under the root organization by rule ID.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \ngroup-manage:r",
+                "produces": [
+                    "application/vnd.cnb.api+json"
+                ],
+                "tags": [
+                    "Organizations"
+                ],
+                "summary": "获取根组织保护分支规则。Get group branch protection rule.",
+                "operationId": "GetGroupBranchProtection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "组织名称。仅允许在根组织节点操作。Group name. Only allowed at the root organization node.",
+                        "name": "group",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "保护分支规则唯一标识符。Branch protection rule unique identifier.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.BranchProtection"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "根据规则 ID 删除根组织下的一条保护分支规则。\nDelete a branch protection rule under the root organization by rule ID.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \ngroup-manage:rw",
+                "produces": [
+                    "application/vnd.cnb.api+json"
+                ],
+                "tags": [
+                    "Organizations"
+                ],
+                "summary": "删除根组织保护分支规则。Delete group branch protection rule.",
+                "operationId": "DeleteGroupBranchProtection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "组织名称。仅允许在根组织节点操作。Group name. Only allowed at the root organization node.",
+                        "name": "group",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "保护分支规则唯一标识符。Branch protection rule unique identifier.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "description": "根据规则 ID 更新根组织下的一条保护分支规则配置。\nUpdate a branch protection rule under the root organization by rule ID.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \ngroup-manage:rw",
+                "consumes": [
+                    "application/vnd.cnb.api+json"
+                ],
+                "produces": [
+                    "application/vnd.cnb.api+json"
+                ],
+                "tags": [
+                    "Organizations"
+                ],
+                "summary": "更新根组织保护分支规则。Update group branch protection rule.",
+                "operationId": "PatchGroupBranchProtection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "组织名称。仅允许在根组织节点操作。Group name. Only allowed at the root organization node.",
+                        "name": "group",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "保护分支规则唯一标识符。Branch protection rule unique identifier.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "保护分支规则配置。Branch protection rule configuration.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.BranchProtection"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
         "/{group}/-/inherit-members": {
             "get": {
                 "description": "获取从父组织继承而来的成员列表。\nList members inherited from parent organizations.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \ngroup-manage:r",
@@ -3621,7 +3919,7 @@
         },
         "/{repo}/-/build/logs": {
             "get": {
-                "description": "分页查询仓库的流水线构建历史记录，支持按分支、事件、状态等条件筛选。\nPaginate the pipeline build history of a repository. Supports filtering by branch, event, status, and more.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-history:r",
+                "description": "分页查询仓库的构建历史记录，支持按分支、事件、状态、标题等条件筛选。\nPaginate the build history of a repository, filterable by branch, event, status, title and more.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-history:r",
                 "consumes": [
                     "application/json"
                 ],
@@ -3631,7 +3929,7 @@
                 "tags": [
                     "Build"
                 ],
-                "summary": "查询流水线构建列表。List pipeline builds.",
+                "summary": "查询构建历史。List build history.",
                 "operationId": "GetBuildLogs",
                 "parameters": [
                     {
@@ -3643,13 +3941,13 @@
                     },
                     {
                         "type": "string",
-                        "description": "起始日期，格式 \"YYYY-MM-DD\"，例如 \"2024-12-01\"。Start date in \"YYYY-MM-DD\" format, e.g. \"2024-12-01\"",
+                        "description": "起始日期，格式 \"YYYY-MM-DD\"，例如 \"2024-12-01\"。\nStart date in \"YYYY-MM-DD\" format, e.g. \"2024-12-01\".",
                         "name": "createTime",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "结束日期，格式 \"YYYY-MM-DD\"，例如 \"2024-12-01\"。End date in \"YYYY-MM-DD\" format, e.g. \"2024-12-01\"",
+                        "description": "结束日期，格式 \"YYYY-MM-DD\"，例如 \"2024-12-01\"。End date in \"YYYY-MM-DD\" format, e.g. \"2024-12-01\".",
                         "name": "endTime",
                         "in": "query"
                     },
@@ -3703,6 +4001,12 @@
                     },
                     {
                         "type": "string",
+                        "description": "构建标题关键字；无标题的构建不会命中。Build title keyword; untitled builds won't match.",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "用户ID。User ID.",
                         "name": "userId",
                         "in": "query"
@@ -3731,7 +4035,7 @@
         },
         "/{repo}/-/build/logs/ai-audit/{sn}/{pipelineId}": {
             "get": {
-                "description": "查询指定流水线的 AI 用量汇总（按模型分组的 token / 调用次数 / 消费额度）。\nQuery the AI usage summary of a pipeline (tokens / request count / credit grouped by model).\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-history:r",
+                "description": "按模型分组统计指定流水线的 token 数、调用次数与消费额度。\nAggregate tokens, request count and consumed credit of a pipeline, grouped by model.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-history:r",
                 "consumes": [
                     "application/json"
                 ],
@@ -3741,7 +4045,7 @@
                 "tags": [
                     "Build"
                 ],
-                "summary": "查询流水线 AI 用量汇总。Get pipeline AI usage summary.",
+                "summary": "查询 AI 用量汇总。List AI usage by model.",
                 "operationId": "GetBuildAiAudit",
                 "parameters": [
                     {
@@ -3783,7 +4087,7 @@
         },
         "/{repo}/-/build/logs/ai-request-detail/{sn}/{pipelineId}/{requestId}": {
             "get": {
-                "description": "根据请求 ID 查询单条 AI 请求的详情（请求体 / 请求头 / 响应体 / 响应头）。\nQuery the detail of a single AI request (body / headers of request and response) by request ID.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-history:r",
+                "description": "根据请求 ID 查询请求与响应的头与体。\nQuery request and response headers and bodies by request ID.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-history:r",
                 "consumes": [
                     "application/json"
                 ],
@@ -3793,7 +4097,7 @@
                 "tags": [
                     "Build"
                 ],
-                "summary": "查询单条 AI 请求详情。Get a single AI request detail.",
+                "summary": "查询 AI 请求详情。Get AI request detail.",
                 "operationId": "GetBuildAiRequestDetail",
                 "parameters": [
                     {
@@ -3842,7 +4146,7 @@
         },
         "/{repo}/-/build/logs/ai-request/{sn}/{pipelineId}/{page}": {
             "get": {
-                "description": "分页查询指定流水线的 AI 请求明细（每条请求的模型、token、耗时、状态等）。\nPaginate the AI request entries of a pipeline (model, tokens, duration, status per request).\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-history:r",
+                "description": "分页查询指定流水线的 AI 请求明细，包含每条请求的模型、token、耗时与状态。\nPaginate AI requests of a pipeline, including model, tokens, duration and status of each request.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-history:r",
                 "consumes": [
                     "application/json"
                 ],
@@ -3852,7 +4156,7 @@
                 "tags": [
                     "Build"
                 ],
-                "summary": "查询 AI 请求明细。List AI request entries.",
+                "summary": "查询 AI 请求明细。List AI requests.",
                 "operationId": "GetBuildAiRequest",
                 "parameters": [
                     {
@@ -3901,7 +4205,7 @@
         },
         "/{repo}/-/build/logs/stage/{sn}/{pipelineId}/{stageId}": {
             "get": {
-                "description": "根据构建号和 Stage ID 查询流水线中单个 Stage 的执行详情和日志。\nQuery the execution details and logs of a single stage in a pipeline build by SN and stage ID.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-trigger:r",
+                "description": "根据构建号与阶段 ID 查询单个阶段的执行详情和日志。\nQuery execution details and logs of a single stage by build SN and stage ID.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-trigger:r",
                 "consumes": [
                     "application/json"
                 ],
@@ -3911,7 +4215,7 @@
                 "tags": [
                     "Build"
                 ],
-                "summary": "查询 Stage 详情。Get pipeline stage detail.",
+                "summary": "查询阶段详情。Get stage detail.",
                 "operationId": "GetBuildStage",
                 "parameters": [
                     {
@@ -3960,7 +4264,7 @@
         },
         "/{repo}/-/build/logs/{sn}": {
             "delete": {
-                "description": "根据构建号 SN 删除指定流水线构建的日志内容。\nDelete the log content of a specific pipeline build by its serial number (SN).\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-trigger:rw",
+                "description": "根据构建号 SN 删除指定构建的日志内容。\nDelete the log content of a build by its SN.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-trigger:rw",
                 "consumes": [
                     "application/json"
                 ],
@@ -3970,7 +4274,7 @@
                 "tags": [
                     "Build"
                 ],
-                "summary": "删除流水线日志内容。Delete pipeline logs content.",
+                "summary": "删除构建日志。Delete build logs.",
                 "operationId": "BuildLogsDelete",
                 "parameters": [
                     {
@@ -4009,7 +4313,7 @@
                 "tags": [
                     "Build"
                 ],
-                "summary": "流水线 Runner 日志下载。Pipeline runner log download.",
+                "summary": "下载 Runner 日志。Download runner logs.",
                 "operationId": "BuildRunnerDownloadLog",
                 "parameters": [
                     {
@@ -4050,7 +4354,7 @@
         },
         "/{repo}/-/build/start": {
             "post": {
-                "description": "触发一次新的流水线构建，支持通过 body 参数指定分支、提交和构建变量。\nTrigger a new pipeline build. Branch, commit, and build variables can be specified via body parameters.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-trigger:rw",
+                "description": "支持在请求体中指定分支、提交与构建变量，返回构建号与构建链接。\nSpecify branch, commit and build variables in the request body; returns the build SN and build URL.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-trigger:rw",
                 "consumes": [
                     "application/json"
                 ],
@@ -4060,7 +4364,7 @@
                 "tags": [
                     "Build"
                 ],
-                "summary": "开始一个构建。Start a build.",
+                "summary": "触发构建。Trigger a build.",
                 "operationId": "StartBuild",
                 "parameters": [
                     {
@@ -4097,7 +4401,7 @@
         },
         "/{repo}/-/build/status/{sn}": {
             "get": {
-                "description": "根据构建号 SN 查询单次构建的当前状态和进度信息。\nQuery the current status and progress of a single build by its serial number (SN).\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-trigger:r",
+                "description": "根据构建号 SN 查询单次构建的当前状态与进度。\nQuery the current status and progress of a single build by its SN.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-cnb-trigger:r",
                 "consumes": [
                     "application/json"
                 ],
@@ -4107,7 +4411,7 @@
                 "tags": [
                     "Build"
                 ],
-                "summary": "查询流水线构建状态。Get pipeline build status.",
+                "summary": "查询构建状态。Get build status.",
                 "operationId": "GetBuildStatus",
                 "parameters": [
                     {
@@ -4152,7 +4456,7 @@
                 "tags": [
                     "Build"
                 ],
-                "summary": "停止一个构建。Stop a build.",
+                "summary": "停止构建。Stop a build.",
                 "operationId": "StopBuild",
                 "parameters": [
                     {
@@ -6345,6 +6649,53 @@
                 ]
             }
         },
+        "/{repo}/-/id_token": {
+            "post": {
+                "description": "用 cnb_token 兑换 id_token, 仅允许流水线 token（oci 渠道）\nExchange cnb_token for id_token, only allow pipeline token (oci channel)\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-basic-info:r",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/vnd.cnb.api+json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "用 cnb_token 兑换 id_token, 仅允许流水线 token（oci 渠道）",
+                "operationId": "ExchangeOidcIDToken",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "仓库路径。Repo path.",
+                        "name": "repo",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Audience 请求体。Registry information.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.IDTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.IDTokenResponse"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
         "/{repo}/-/imgs/issues/{img_path}": {
             "get": {
                 "description": "获取与 Issue 关联的图片二进制内容。\nReturns the binary content of the image.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-issue:r",
@@ -6928,6 +7279,73 @@
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/api.IssueAssetUploadURL"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/{repo}/-/issues/batch": {
+            "get": {
+                "description": "根据 Issue 编号列表批量查询指定仓库中的多个 Issue 概要信息（不含正文内容），一次最多支持 100 个编号。返回顺序未定义，调用方需按 `number` 自行组装。\nBatch get summary information of multiple issues in the specified repository by their numbers (body content is not included). A maximum of 100 numbers per request.\nResponse order is unspecified; callers should key results by `number`.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-issue:r",
+                "produces": [
+                    "application/vnd.cnb.api+json"
+                ],
+                "tags": [
+                    "Issues"
+                ],
+                "summary": "批量查询 Issue。Batch get issues.",
+                "operationId": "GetIssuesInBatch",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "不带.git后缀的仓库名称。格式：`组织名称/仓库名称`。Repository name without .git suffix. Format: `org/repo`.",
+                        "name": "repo",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Issue 编号列表，多个编号用英文逗号分隔，一次最多 100 个。示例：`?numbers=1,2,3`。Issue number list, comma-separated; up to 100 per request. Example: `?numbers=1,2,3`.",
+                        "name": "numbers",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/api.Issue"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
                         }
                     },
                     "404": {
@@ -12499,6 +12917,7 @@
             "get": {
                 "description": "查询指定仓库的云原生构建（Pipeline）配置信息。\nQuery the cloud native build (Pipeline) configuration of the specified repository.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-manage:r",
                 "produces": [
+                    "application/vnd.cnb.api+json"
                 ],
                 "tags": [
                     "GitSettings"
@@ -13398,6 +13817,73 @@
                 ]
             }
         },
+        "/{slug}/-/contributor/simply": {
+            "get": {
+                "description": "查询仓库贡献者排名前 1000 的缩略统计信息。通过 `limit` 参数控制返回数量（默认 15，最大 1000），通过 `keyword` 参数按用户名或邮箱模糊搜索。\nQuery brief statistics for the top 1000 repository contributors.\nSupports limiting the returned count via `limit` (default 15, max 1000).\nSupports fuzzy search by username or email via `keyword`.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-code:r",
+                "produces": [
+                    "application/vnd.cnb.api+json"
+                ],
+                "tags": [
+                    "RepoContributor"
+                ],
+                "summary": "查询贡献者缩略信息。Get contributor brief info.",
+                "operationId": "GetRepoContributorSimply",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "仓库标识符。格式：`组织名称/仓库名称`. Repository identifier. Format: `org_name/repo_name`",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 15,
+                        "description": "查询结果数量限制，当limit小于0时，默认为15。格式：[0,1000]",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "是否排除外部用户。示例值：`true`,`false`",
+                        "name": "exclude_external_users",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按用户名或邮箱模糊搜索。Fuzzy search by username or email.",
+                        "name": "keyword",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.RepoContribSimply"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/die.WebError"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
         "/{slug}/-/contributor/trend": {
             "get": {
                 "description": "查询仓库贡献者排名前 100 的详细趋势数据。通过 `limit` 参数控制返回数量（默认 15，最大 100），通过 `exclude_external_users` 参数排除外部用户。\nGet detailed trend data of the top 100 repository contributors.\nSupports controlling the number of results via the `limit` parameter (default 15, max 100).\nUse `exclude_external_users` to exclude external users.\n访问令牌调用此接口需包含以下权限。Required permissions for access token. \nrepo-code:r",
@@ -14007,7 +14493,7 @@
                             "all",
                             "docker",
                             "helm",
-                            "dockermodel",
+                            "oci",
                             "maven",
                             "npm",
                             "ohpm",
@@ -14106,7 +14592,7 @@
                         "enum": [
                             "docker",
                             "helm",
-                            "dockermodel",
+                            "oci",
                             "maven",
                             "npm",
                             "ohpm",
@@ -14169,7 +14655,7 @@
                         "enum": [
                             "docker",
                             "helm",
-                            "dockermodel",
+                            "oci",
                             "maven",
                             "npm",
                             "ohpm",
@@ -14231,7 +14717,7 @@
                         "enum": [
                             "docker",
                             "helm",
-                            "dockermodel",
+                            "oci",
                             "maven",
                             "npm",
                             "ohpm",
@@ -14305,7 +14791,7 @@
                         "enum": [
                             "docker",
                             "helm",
-                            "dockermodel",
+                            "oci",
                             "maven",
                             "npm",
                             "ohpm",
@@ -14384,7 +14870,7 @@
                         "enum": [
                             "docker",
                             "helm",
-                            "dockermodel",
+                            "oci",
                             "maven",
                             "npm",
                             "ohpm",
@@ -14450,7 +14936,7 @@
                         "enum": [
                             "docker",
                             "helm",
-                            "dockermodel",
+                            "oci",
                             "maven",
                             "npm",
                             "ohpm",
@@ -14523,7 +15009,7 @@
                         "enum": [
                             "docker",
                             "helm",
-                            "dockermodel",
+                            "oci",
                             "maven",
                             "npm",
                             "ohpm",
@@ -14985,6 +15471,13 @@
                 "summary": "查询制品安全概览。Get artifact security overview.",
                 "operationId": "GetArtifactSecurityOverview",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "仓库路径。Repo path.",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "制品类型。通用: maven, npm, pypi 等；容器: docker。Artifact type. Common: maven, npm, pypi etc.; Container: docker",
@@ -15714,10 +16207,6 @@
                 "created_at": {
                     "description": "附件创建时间。Attachment created at.",
                     "type": "string"
-                },
-                "download_count": {
-                    "description": "下载次数。Download count.",
-                    "type": "integer"
                 },
                 "hash_algo": {
                     "description": "附件哈希算法。Attachment hash algorithm.",
@@ -16560,7 +17049,7 @@
                     "type": "boolean"
                 },
                 "merge_style": {
-                    "description": "合并提交方式。可选值：`merge`,`squash`,`rebase`",
+                    "description": "合并提交方式。可选值：`merge`,`squash`,`rebase`, `fast_forward`",
                     "type": "string"
                 }
             }
@@ -17779,10 +18268,6 @@
                     "description": "创建时间。Created at.",
                     "type": "string"
                 },
-                "download_count": {
-                    "description": "下载次数。Download count.",
-                    "type": "integer"
-                },
                 "hash_algo": {
                     "description": "附件哈希算法。Attachment hash algorithm.",
                     "type": "string"
@@ -17843,6 +18328,23 @@
                 "web_url": {
                     "description": "仓库的Web访问地址。",
                     "type": "string"
+                }
+            }
+        },
+        "api.RepoContribSimply": {
+            "type": "object",
+            "properties": {
+                "meta": {
+                    "$ref": "#/definitions/api.Meta"
+                },
+                "top_100_contrib": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api.UserContributorSimply"
+                    }
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -18096,6 +18598,20 @@
                 },
                 "type": {
                     "description": "对象类型。枚举值：`tree`,`blob`,`link`,`submodule`",
+                    "type": "string"
+                }
+            }
+        },
+        "api.UserContributorSimply": {
+            "type": "object",
+            "properties": {
+                "commit_count": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "user_name": {
                     "type": "string"
                 }
             }
@@ -18600,15 +19116,19 @@
             "type": "object",
             "properties": {
                 "commit_count": {
+                    "description": "提交数。Commit count.",
                     "type": "integer"
                 },
                 "issues_count": {
+                    "description": "议题数。Issue count.",
                     "type": "integer"
                 },
                 "pr_count": {
+                    "description": "合并请求数。Pull request count.",
                     "type": "integer"
                 },
                 "score": {
+                    "description": "活跃度评分。Activity score.",
                     "type": "number"
                 },
                 "valid_cr_count": {
@@ -18625,10 +19145,11 @@
             "type": "object",
             "properties": {
                 "create_at": {
+                    "description": "创建时间。Creation time.",
                     "type": "string"
                 },
                 "detail": {
-                    "description": "公仓转私仓或仓库被删除后为 null",
+                    "description": "仓库基础信息，公仓转私仓或仓库被删除后为 null。Base repo info; null if the repo was made private or deleted.",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.Repos4UserBase"
@@ -18661,57 +19182,70 @@
             "type": "object",
             "properties": {
                 "code_review_count": {
+                    "description": "代码评审数。Code review count.",
                     "type": "integer"
                 },
                 "code_reviews": {
+                    "description": "代码评审动态。Code review activities.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.ActivityRepoDetail"
                     }
                 },
                 "commit_count": {
+                    "description": "提交数。Commit count.",
                     "type": "integer"
                 },
                 "commits": {
+                    "description": "仓库提交动态。Repo commit activities.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.ActivityRepoDetail"
                     }
                 },
                 "group_count": {
+                    "description": "加入组织数。Joined group count.",
                     "type": "integer"
                 },
                 "groups": {
+                    "description": "加入组织动态。Joined group activities.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.ActivityJoinGroupDetail"
                     }
                 },
                 "issues": {
+                    "description": "议题动态。Issue activities.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.ActivityRepoDetail"
                     }
                 },
                 "issues_count": {
+                    "description": "议题数。Issue count.",
                     "type": "integer"
                 },
                 "private_score": {
+                    "description": "私密度评分。Privacy score.",
                     "type": "integer"
                 },
                 "pull_request_count": {
+                    "description": "合并请求数。Pull request count.",
                     "type": "integer"
                 },
                 "pull_requests": {
+                    "description": "合并请求动态。Pull request activities.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.ActivityRepoDetail"
                     }
                 },
                 "repo_count": {
+                    "description": "创建仓库数。Created repo count.",
                     "type": "integer"
                 },
                 "repos": {
+                    "description": "创建仓库动态。Created repo activities.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.ActivityCreateRepoDetail"
@@ -18723,10 +19257,11 @@
             "type": "object",
             "properties": {
                 "create_at": {
+                    "description": "创建时间。Creation time.",
                     "type": "string"
                 },
                 "detail": {
-                    "description": "组织详情，组织被删后为 null",
+                    "description": "组织详情，组织被删后为 null。Org detail; null if the org was deleted.",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.OrganizationUnion"
@@ -18743,7 +19278,7 @@
             "type": "object",
             "properties": {
                 "detail": {
-                    "description": "公仓转私仓或仓库被删除后为 null",
+                    "description": "仓库路径详情，公仓转私仓或仓库被删除后为 null。Repo path detail; null if the repo was made private or deleted.",
                     "allOf": [
                         {
                             "$ref": "#/definitions/dto.ActivitySlugDetail"
@@ -18763,6 +19298,7 @@
                     "type": "boolean"
                 },
                 "time": {
+                    "description": "动态发生时间。Activity time.",
                     "type": "number"
                 },
                 "visibility_level": {
@@ -19013,6 +19549,7 @@
             }
         },
         "dto.BuildAiAuditResult": {
+            "description": "流水线 AI 用量汇总响应，包含返回码、用量聚合数据与请求日志分页信息。 Pipeline AI usage summary response, including return code, aggregated usage data and request log pagination info.",
             "type": "object",
             "properties": {
                 "code": {
@@ -19038,6 +19575,7 @@
             }
         },
         "dto.BuildAiRequestDetailEntry": {
+            "description": "单条 AI 请求详情，包含请求与响应的头与体。 Detail of a single AI request, including request and response headers and bodies.",
             "type": "object",
             "properties": {
                 "request_body": {
@@ -19063,6 +19601,7 @@
             }
         },
         "dto.BuildAiRequestDetailResult": {
+            "description": "单条 AI 请求详情响应，包含返回码与请求详情。 Single AI request detail response, including return code and request detail.",
             "type": "object",
             "properties": {
                 "code": {
@@ -19080,6 +19619,7 @@
             }
         },
         "dto.BuildAiRequestEntry": {
+            "description": "AI 请求明细单行，包含请求时间、模型、token 用量、耗时、状态与失败原因。 Single AI request entry, including request time, model, token usage, duration, status and failure reason.",
             "type": "object",
             "properties": {
                 "completion_tokens": {
@@ -19161,6 +19701,7 @@
             }
         },
         "dto.BuildAiRequestResult": {
+            "description": "流水线 AI 请求明细分页响应，包含返回码与当前页请求明细列表。 Paged pipeline AI request entries response, including return code and request entries of the current page.",
             "type": "object",
             "properties": {
                 "code": {
@@ -19177,6 +19718,7 @@
             }
         },
         "dto.BuildAiUsageMetric": {
+            "description": "单个模型或聚合口径下的 AI 用量指标，包含输入、输出、思考与缓存 token 数、调用次数与消费额度。 AI usage metrics for a single model or an aggregate, including prompt/completion/thinking/cached tokens, request count and consumed credit.",
             "type": "object",
             "properties": {
                 "completion_tokens": {
@@ -19214,6 +19756,7 @@
             }
         },
         "dto.BuildAiUsageSection": {
+            "description": "AI 用量汇总，包含所有模型的聚合指标与按模型拆分的明细。 AI usage summary, including aggregated metrics across all models and a per-model breakdown.",
             "type": "object",
             "properties": {
                 "models": {
@@ -19234,7 +19777,7 @@
             }
         },
         "dto.BuildCommonResult": {
-            "description": "删除流水线日志内容请求的结果，包含返回码与描述。 Result of deleting pipeline log content, including return code and description.",
+            "description": "通用操作结果，包含返回码与描述信息。 Generic operation result, including return code and description.",
             "type": "object",
             "properties": {
                 "code": {
@@ -19242,12 +19785,39 @@
                     "type": "integer"
                 },
                 "message": {
-                    "description": "描述。Description.",
+                    "description": "结果描述。Result description.",
                     "type": "string"
                 }
             }
         },
+        "dto.BuildLogNpc": {
+            "description": "构建状态中的 NPC 触发来源信息，为对外 API 透出的安全子集，不含 repoId、setting 等内部字段。 NPC build source info in build status. A safe subset exposed to the external API; excludes internal fields like repoId and setting.",
+            "type": "object",
+            "properties": {
+                "match": {
+                    "description": "NPC 匹配文本。NPC match text.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "NPC 角色名。NPC role name.",
+                    "type": "string"
+                },
+                "sha": {
+                    "description": "触发 NPC 事件时其所属仓库默认分支的 sha。Default branch sha of the NPC repo when triggered.",
+                    "type": "string"
+                },
+                "slug": {
+                    "description": "NPC 所属仓库 slug。Slug of the NPC's repository.",
+                    "type": "string"
+                },
+                "workMode": {
+                    "description": "是否开启工作模式。Whether work mode is enabled.",
+                    "type": "boolean"
+                }
+            }
+        },
         "dto.BuildLogsResult": {
+            "description": "构建历史查询结果，包含构建总数、当前页构建列表与查询时间戳。 Build history query result, including total count, build list of the current page and query timestamp.",
             "type": "object",
             "properties": {
                 "data": {
@@ -19268,6 +19838,7 @@
             }
         },
         "dto.BuildPipelineInfo": {
+            "description": "构建中单条流水线的摘要信息，包含流水线 ID、开始时间、耗时与状态。 Summary of a single pipeline in a build, including pipeline ID, start time, duration and status.",
             "type": "object",
             "properties": {
                 "createTime": {
@@ -19315,48 +19886,58 @@
             }
         },
         "dto.BuildStageResult": {
+            "description": "阶段执行详情，包含阶段名称、状态、错误信息、日志内容与起止时间。 Stage execution detail, including name, status, error message, log content and start/end time.",
             "type": "object",
             "properties": {
                 "content": {
-                    "description": "stage 日志内容，数组格式，一个元素表示一行日志",
+                    "description": "阶段日志内容，数组格式，每个元素为一行日志。Stage log content as an array, one element per line.",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "duration": {
-                    "description": "stage 耗时，单位：ms",
+                    "description": "阶段耗时，单位：ms。Stage duration, unit: ms.",
                     "type": "integer"
                 },
                 "endTime": {
-                    "description": "stage 结束时间",
+                    "description": "阶段结束时间戳。Stage end timestamp.",
                     "type": "integer"
                 },
                 "error": {
-                    "description": "stage 错误信息",
+                    "description": "阶段错误信息。Stage error message.",
                     "type": "string"
                 },
                 "id": {
-                    "description": "阶段ID。Stage ID.",
+                    "description": "阶段 ID。Stage ID.",
                     "type": "string"
                 },
                 "name": {
-                    "description": "stage 名称",
+                    "description": "阶段名称。Stage name.",
                     "type": "string"
                 },
                 "startTime": {
-                    "description": "stage 开始时间",
+                    "description": "阶段开始时间戳。Stage start timestamp.",
                     "type": "integer"
                 },
                 "status": {
-                    "description": "stage 状态:  \"pending\", \"start\", \"success\", \"error\", \"cancel\", \"skipped\"",
+                    "description": "阶段状态，取值：\"pending\"、\"start\"、\"success\"、\"error\"、\"cancel\"、\"skipped\"。Stage status: one of the values above.",
                     "type": "string"
                 }
             }
         },
         "dto.BuildStatusResult": {
+            "description": "流水线构建状态结果，包含整体状态、各流水线状态与触发该构建的 NPC 信息。 Pipeline build status result, including overall status, per-pipeline status and the NPC that triggered the build.",
             "type": "object",
             "properties": {
+                "npc": {
+                    "description": "发起该构建的 NPC 信息（若由 NPC 触发）。NPC info that triggered this build (if any).",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.BuildLogNpc"
+                        }
+                    ]
+                },
                 "pipelinesStatus": {
                     "description": "流水线的状态。Pipeline status.",
                     "type": "object",
@@ -19382,7 +19963,7 @@
                     "type": "string"
                 },
                 "guarded": {
-                    "description": "Guarded 标记该制品包下是否存在被保护的制品 仅 docker/helm/dockermodel 在被保护时返回 true",
+                    "description": "Guarded 标记该制品包下是否存在被保护的制品 仅 docker/helm/oci 在被保护时返回 true",
                     "type": "boolean"
                 },
                 "last_pusher": {
@@ -19438,7 +20019,7 @@
                     "type": "string"
                 },
                 "guarded": {
-                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true",
+                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/oci 可能为 true",
                     "type": "boolean"
                 },
                 "has_provenance": {
@@ -19495,7 +20076,7 @@
                     "type": "string"
                 },
                 "guarded": {
-                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true",
+                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/oci 可能为 true",
                     "type": "boolean"
                 },
                 "has_provenance": {
@@ -19733,7 +20314,7 @@
                     "type": "string"
                 },
                 "guarded": {
-                    "description": "Guarded 标记该制品包下是否存在被保护的制品 仅 docker/helm/dockermodel 在被保护时返回 true",
+                    "description": "Guarded 标记该制品包下是否存在被保护的制品 仅 docker/helm/oci 在被保护时返回 true",
                     "type": "boolean"
                 },
                 "last_pusher": {
@@ -19826,7 +20407,7 @@
                     "type": "string"
                 },
                 "guarded": {
-                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true",
+                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/oci 可能为 true",
                     "type": "boolean"
                 },
                 "has_provenance": {
@@ -19889,7 +20470,7 @@
                     }
                 },
                 "guarded": {
-                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true",
+                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/oci 可能为 true",
                     "type": "boolean"
                 },
                 "has_provenance": {
@@ -20119,7 +20700,7 @@
                     }
                 },
                 "guarded": {
-                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true",
+                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/oci 可能为 true",
                     "type": "boolean"
                 },
                 "has_provenance": {
@@ -20230,7 +20811,7 @@
                     "type": "string"
                 },
                 "guarded": {
-                    "description": "Guarded 标记该制品包下是否存在被保护的制品 仅 docker/helm/dockermodel 在被保护时返回 true",
+                    "description": "Guarded 标记该制品包下是否存在被保护的制品 仅 docker/helm/oci 在被保护时返回 true",
                     "type": "boolean"
                 },
                 "last_pusher": {
@@ -20337,7 +20918,7 @@
                     "type": "string"
                 },
                 "guarded": {
-                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true",
+                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/oci 可能为 true",
                     "type": "boolean"
                 },
                 "has_provenance": {
@@ -20397,7 +20978,7 @@
                     "type": "string"
                 },
                 "guarded": {
-                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true",
+                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/oci 可能为 true",
                     "type": "boolean"
                 },
                 "has_provenance": {
@@ -20568,237 +21149,6 @@
                 }
             }
         },
-        "dto.DockerModelDescriptor": {
-            "type": "object",
-            "properties": {
-                "created": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.DockerModelPackageDetail": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "description": "制品地址。Artifact address.",
-                    "type": "string"
-                },
-                "desc": {
-                    "description": "描述。Description.",
-                    "type": "string"
-                },
-                "guarded": {
-                    "description": "Guarded 标记该制品包下是否存在被保护的制品 仅 docker/helm/dockermodel 在被保护时返回 true",
-                    "type": "boolean"
-                },
-                "last_pusher": {
-                    "description": "最后推送人。Last pusher.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.LastPusher"
-                        }
-                    ]
-                },
-                "package": {
-                    "description": "制品标识。Artifact identifier.",
-                    "type": "string"
-                },
-                "pull_count": {
-                    "description": "总拉取次数。Total pull count.",
-                    "type": "integer"
-                },
-                "recent_pull_count": {
-                    "description": "最近拉取次数。Recent pull count.",
-                    "type": "integer"
-                },
-                "slug": {
-                    "description": "制品 slug。Slug.",
-                    "type": "string"
-                },
-                "tag_total": {
-                    "description": "标签总数。Total tag count.",
-                    "type": "integer"
-                },
-                "tags": {
-                    "description": "标签列表。Tag list.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.DockerModelTag"
-                    }
-                }
-            }
-        },
-        "dto.DockerModelProvenance": {
-            "type": "object",
-            "properties": {
-                "digest": {
-                    "description": "Digest 制品摘要.",
-                    "type": "string"
-                },
-                "git_address": {
-                    "description": "GitAddress git仓库地址.",
-                    "type": "string"
-                },
-                "git_commit": {
-                    "description": "GitCommit git提交记录.",
-                    "type": "string"
-                },
-                "last_pusher": {
-                    "description": "LastPusher 最后推送人.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.LastPusher"
-                        }
-                    ]
-                },
-                "package": {
-                    "description": "Package 制品名.",
-                    "type": "string"
-                },
-                "registry_address": {
-                    "description": "RegistryAddress 制品库地址.",
-                    "type": "string"
-                },
-                "sn": {
-                    "description": "SN 流水线构建唯一标识。Pipeline build unique identifier.",
-                    "type": "string"
-                },
-                "tag": {
-                    "description": "Tag 制品标签名.",
-                    "type": "string"
-                }
-            }
-        },
-        "dto.DockerModelTag": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "description": "制品地址。Artifact address.",
-                    "type": "string"
-                },
-                "config": {
-                    "description": "模型配置。Model config.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.DockerModelConfig"
-                        }
-                    ]
-                },
-                "descriptor": {
-                    "description": "描述符。Descriptor.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.DockerModelDescriptor"
-                        }
-                    ]
-                },
-                "git_address": {
-                    "description": "源仓库地址。Source repository URL.",
-                    "type": "string"
-                },
-                "guarded": {
-                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true",
-                    "type": "boolean"
-                },
-                "has_provenance": {
-                    "description": "是否有出生证明。Whether it has provenance.",
-                    "type": "boolean"
-                },
-                "last_pusher": {
-                    "description": "最后推送人。Last pusher.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.LastPusher"
-                        }
-                    ]
-                },
-                "name": {
-                    "description": "标签名。Tag name.",
-                    "type": "string"
-                },
-                "pull_count": {
-                    "description": "总拉取次数。Total pull count.",
-                    "type": "integer"
-                },
-                "recent_pull_count": {
-                    "description": "最近拉取次数。Recent pull count.",
-                    "type": "integer"
-                },
-                "size": {
-                    "description": "制品大小。Artifact size.",
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.DockerModelTagDetail": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "description": "制品地址。Artifact address.",
-                    "type": "string"
-                },
-                "config": {
-                    "description": "模型配置。Model config.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.DockerModelConfig"
-                        }
-                    ]
-                },
-                "descriptor": {
-                    "description": "描述符。Descriptor.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.DockerModelDescriptor"
-                        }
-                    ]
-                },
-                "git_address": {
-                    "description": "源仓库地址。Source repository URL.",
-                    "type": "string"
-                },
-                "guarded": {
-                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true",
-                    "type": "boolean"
-                },
-                "has_provenance": {
-                    "description": "HasProvenance 是否有出生证明; pypi和conan制品由于有多架构，取决于最新推送.",
-                    "type": "boolean"
-                },
-                "last_pusher": {
-                    "description": "最后推送人。Last pusher.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dto.LastPusher"
-                        }
-                    ]
-                },
-                "package": {
-                    "description": "制品标识。Artifact identifier.",
-                    "type": "string"
-                },
-                "pull_count": {
-                    "description": "总拉取次数。Total pull count.",
-                    "type": "integer"
-                },
-                "recent_pull_count": {
-                    "description": "最近拉取次数。Recent pull count.",
-                    "type": "integer"
-                },
-                "size": {
-                    "description": "制品大小。Artifact size.",
-                    "type": "integer"
-                },
-                "slug": {
-                    "description": "制品 slug。Slug.",
-                    "type": "string"
-                },
-                "tag": {
-                    "description": "标签名。Tag name.",
-                    "type": "string"
-                }
-            }
-        },
         "dto.DocumentStatistics": {
             "type": "object",
             "properties": {
@@ -20876,7 +21226,7 @@
         },
         "dto.GGUF": {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": {}
         },
         "dto.GetBadgeReq": {
             "type": "object",
@@ -20920,12 +21270,14 @@
             "type": "object",
             "properties": {
                 "rank_list": {
+                    "description": "仓库排名详情列表。Repository rank detail list.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.RankDetailWithIncr"
                     }
                 },
                 "updated_at": {
+                    "description": "榜单更新时间。Leaderboard update time.",
                     "type": "string"
                 }
             }
@@ -20963,6 +21315,10 @@
                 "values": {
                     "description": "SettingValue 组织设置值，多个选项，用逗号拼接。可选值来自 SettingNamesArray 的值，e.g. disable_organization_readme,cloud_native_dev_only",
                     "type": "string"
+                },
+                "visitor_npc_price_limit": {
+                    "description": "VisitorNpcPriceLimit 访客可用 NPC 价格上限，量纲同 NpcPriceLimit（毫元/MTok），0 表示不对访客额外管控（跟随 NpcPriceLimit）。\n访客口径与「仅允许仓库成员@NPC」一致：与根组织树无任何成员/外部协作者关系的用户。\n仓库成员（含最低 Guest 角色）、仓库外部协作者、组织成员、兄弟仓成员均不算访客。\nVisitor NPC price limit, same unit as NpcPriceLimit (milli-money/MTok), 0 means no extra control for visitors.",
+                    "type": "integer"
                 }
             }
         },
@@ -21003,6 +21359,22 @@
                 },
                 "tag": {
                     "description": "Tag 制品标签名.",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.IDTokenRequest": {
+            "type": "object",
+            "properties": {
+                "aud": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.IDTokenResponse": {
+            "type": "object",
+            "properties": {
+                "id_token": {
                     "type": "string"
                 }
             }
@@ -21261,14 +21633,15 @@
             }
         },
         "dto.LogInfo": {
+            "description": "构建历史记录，包含构建号、仓库、触发事件、耗时、状态与子流水线统计。 Build history record, including build SN, repository, trigger event, duration, status and sub-pipeline statistics.",
             "type": "object",
             "properties": {
                 "buildLogUrl": {
-                    "description": "构建日志 url。Build log URL.",
+                    "description": "构建日志地址。Build log URL.",
                     "type": "string"
                 },
                 "commitTitle": {
-                    "description": "提交日志 title",
+                    "description": "提交信息标题。Commit message title.",
                     "type": "string"
                 },
                 "createTime": {
@@ -21351,7 +21724,7 @@
                     "type": "string"
                 },
                 "title": {
-                    "description": "构建 title",
+                    "description": "构建标题。Build title.",
                     "type": "string"
                 },
                 "userName": {
@@ -22002,6 +22375,237 @@
                 }
             }
         },
+        "dto.OCIDescriptor": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.OCIPackageDetail": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "制品地址。Artifact address.",
+                    "type": "string"
+                },
+                "desc": {
+                    "description": "描述。Description.",
+                    "type": "string"
+                },
+                "guarded": {
+                    "description": "Guarded 标记该制品包下是否存在被保护的制品 仅 docker/helm/oci 在被保护时返回 true",
+                    "type": "boolean"
+                },
+                "last_pusher": {
+                    "description": "最后推送人。Last pusher.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.LastPusher"
+                        }
+                    ]
+                },
+                "package": {
+                    "description": "制品标识。Artifact identifier.",
+                    "type": "string"
+                },
+                "pull_count": {
+                    "description": "总拉取次数。Total pull count.",
+                    "type": "integer"
+                },
+                "recent_pull_count": {
+                    "description": "最近拉取次数。Recent pull count.",
+                    "type": "integer"
+                },
+                "slug": {
+                    "description": "制品 slug。Slug.",
+                    "type": "string"
+                },
+                "tag_total": {
+                    "description": "标签总数。Total tag count.",
+                    "type": "integer"
+                },
+                "tags": {
+                    "description": "标签列表。Tag list.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.OCITag"
+                    }
+                }
+            }
+        },
+        "dto.OCIProvenance": {
+            "type": "object",
+            "properties": {
+                "digest": {
+                    "description": "Digest 制品摘要.",
+                    "type": "string"
+                },
+                "git_address": {
+                    "description": "GitAddress git仓库地址.",
+                    "type": "string"
+                },
+                "git_commit": {
+                    "description": "GitCommit git提交记录.",
+                    "type": "string"
+                },
+                "last_pusher": {
+                    "description": "LastPusher 最后推送人.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.LastPusher"
+                        }
+                    ]
+                },
+                "package": {
+                    "description": "Package 制品名.",
+                    "type": "string"
+                },
+                "registry_address": {
+                    "description": "RegistryAddress 制品库地址.",
+                    "type": "string"
+                },
+                "sn": {
+                    "description": "SN 流水线构建唯一标识。Pipeline build unique identifier.",
+                    "type": "string"
+                },
+                "tag": {
+                    "description": "Tag 制品标签名.",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.OCITag": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "制品地址。Artifact address.",
+                    "type": "string"
+                },
+                "config": {
+                    "description": "Docker Model 扩展配置。Docker Model extension config.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.DockerModelConfig"
+                        }
+                    ]
+                },
+                "descriptor": {
+                    "description": "Docker Model 扩展描述符。Docker Model extension descriptor.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.OCIDescriptor"
+                        }
+                    ]
+                },
+                "git_address": {
+                    "description": "源仓库地址。Source repository URL.",
+                    "type": "string"
+                },
+                "guarded": {
+                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/oci 可能为 true",
+                    "type": "boolean"
+                },
+                "has_provenance": {
+                    "description": "是否有出生证明。Whether it has provenance.",
+                    "type": "boolean"
+                },
+                "last_pusher": {
+                    "description": "最后推送人。Last pusher.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.LastPusher"
+                        }
+                    ]
+                },
+                "name": {
+                    "description": "标签名。Tag name.",
+                    "type": "string"
+                },
+                "pull_count": {
+                    "description": "总拉取次数。Total pull count.",
+                    "type": "integer"
+                },
+                "recent_pull_count": {
+                    "description": "最近拉取次数。Recent pull count.",
+                    "type": "integer"
+                },
+                "size": {
+                    "description": "制品大小。Artifact size.",
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.OCITagDetail": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "制品地址。Artifact address.",
+                    "type": "string"
+                },
+                "config": {
+                    "description": "Docker Model 扩展配置。Docker Model extension config.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.DockerModelConfig"
+                        }
+                    ]
+                },
+                "descriptor": {
+                    "description": "Docker Model 扩展描述符。Docker Model extension descriptor.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.OCIDescriptor"
+                        }
+                    ]
+                },
+                "git_address": {
+                    "description": "源仓库地址。Source repository URL.",
+                    "type": "string"
+                },
+                "guarded": {
+                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/oci 可能为 true",
+                    "type": "boolean"
+                },
+                "has_provenance": {
+                    "description": "HasProvenance 是否有出生证明; pypi和conan制品由于有多架构，取决于最新推送.",
+                    "type": "boolean"
+                },
+                "last_pusher": {
+                    "description": "最后推送人。Last pusher.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.LastPusher"
+                        }
+                    ]
+                },
+                "package": {
+                    "description": "制品标识。Artifact identifier.",
+                    "type": "string"
+                },
+                "pull_count": {
+                    "description": "总拉取次数。Total pull count.",
+                    "type": "integer"
+                },
+                "recent_pull_count": {
+                    "description": "最近拉取次数。Recent pull count.",
+                    "type": "integer"
+                },
+                "size": {
+                    "description": "制品大小。Artifact size.",
+                    "type": "integer"
+                },
+                "slug": {
+                    "description": "制品 slug。Slug.",
+                    "type": "string"
+                },
+                "tag": {
+                    "description": "标签名。Tag name.",
+                    "type": "string"
+                }
+            }
+        },
         "dto.OpenAPIArtifactLicenseOverview": {
             "type": "object",
             "properties": {
@@ -22329,6 +22933,10 @@
                 },
                 "values": {
                     "$ref": "#/definitions/organization.SettingValue"
+                },
+                "visitor_npc_price_limit": {
+                    "description": "访客可用 NPC 价格上限，量纲同上（毫元/MTok），0 表示不对访客额外管控（跟随 NpcPriceLimit）。\n由根组织统一管控，子组织不可单独配置，故无需 Root 副本（其值恒等于本字段）。",
+                    "type": "integer"
                 }
             }
         },
@@ -22526,7 +23134,7 @@
                     "type": "string"
                 },
                 "guarded": {
-                    "description": "Guarded 标记该制品是否被保护 仅 docker/helm/dockermodel 在被保护时返回 true",
+                    "description": "Guarded 标记该制品是否被保护 仅 docker/helm/oci 在被保护时返回 true",
                     "type": "boolean"
                 },
                 "is_dir": {
@@ -22593,9 +23201,6 @@
                 "docker": {
                     "$ref": "#/definitions/dto.ContainerPackageDetail"
                 },
-                "dockermodel": {
-                    "$ref": "#/definitions/dto.DockerModelPackageDetail"
-                },
                 "generic": {
                     "$ref": "#/definitions/dto.CommonRegistryPackageDetail"
                 },
@@ -22611,6 +23216,9 @@
                 "nuget": {
                     "$ref": "#/definitions/dto.CommonRegistryPackageDetail"
                 },
+                "oci": {
+                    "$ref": "#/definitions/dto.OCIPackageDetail"
+                },
                 "ohpm": {
                     "$ref": "#/definitions/dto.CommonRegistryPackageDetail"
                 },
@@ -22625,8 +23233,7 @@
                 "all",
                 "docker",
                 "helm",
-                "docker-model",
-                "dockermodel",
+                "oci",
                 "npm",
                 "maven",
                 "ohpm",
@@ -22643,13 +23250,12 @@
                 "PackageTypeComposer": "PackageTypeComposer  composer 制品",
                 "PackageTypeConan": "PackageTypeConan conan 制品",
                 "PackageTypeDocker": "PackageTypeDocker 容器制品，由 container 兼容",
-                "PackageTypeDockerModel": "PackageTypeDockerModel docker model 制品",
-                "PackageTypeDockerModelAlias": "PackageTypeDockerModelAlias docker model 制品别名",
                 "PackageTypeGeneric": "PackageTypeGeneric 通用制品",
                 "PackageTypeHelm": "PackageTypeHelm helm chart 制品，由 chart 兼容",
                 "PackageTypeMaven": "PackageTypeMaven maven  制品",
                 "PackageTypeNpm": "PackageTypeNpm  npm  制品",
                 "PackageTypeNuget": "PackageTypeNuget  nuget 制品",
+                "PackageTypeOCI": "PackageTypeOCI oci 制品",
                 "PackageTypeOhpm": "PackageTypeOhpm  ohpm 制品",
                 "PackageTypePypi": "PackageTypePypi  pypi 制品"
             },
@@ -22657,8 +23263,7 @@
                 "PackageTypeArtifactory 仓库下的制品",
                 "PackageTypeDocker 容器制品，由 container 兼容",
                 "PackageTypeHelm helm chart 制品，由 chart 兼容",
-                "PackageTypeDockerModel docker model 制品",
-                "PackageTypeDockerModelAlias docker model 制品别名",
+                "PackageTypeOCI oci 制品",
                 "PackageTypeNpm  npm  制品",
                 "PackageTypeMaven maven  制品",
                 "PackageTypeOhpm  ohpm 制品",
@@ -22673,8 +23278,7 @@
                 "PackageTypeArtifactory",
                 "PackageTypeDocker",
                 "PackageTypeHelm",
-                "PackageTypeDockerModel",
-                "PackageTypeDockerModelAlias",
+                "PackageTypeOCI",
                 "PackageTypeNpm",
                 "PackageTypeMaven",
                 "PackageTypeOhpm",
@@ -22687,12 +23291,15 @@
             ]
         },
         "dto.PipelineLabel": {
+            "description": "流水线标签，例如 cpus、memory 等资源规格。 Pipeline label, e.g. cpus and memory resource specifications.",
             "type": "object",
             "properties": {
                 "key": {
+                    "description": "标签名，例如 cpus、memory。Label name, e.g. cpus, memory.",
                     "type": "string"
                 },
                 "value": {
+                    "description": "标签值列表。List of label values.",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -22701,6 +23308,7 @@
             }
         },
         "dto.PipelineStatus": {
+            "description": "单个流水线的状态，包含名称、状态、耗时、计费信息、各 stage 状态与标签。 Status of a single pipeline, including name, status, duration, billing info, stage statuses and labels.",
             "type": "object",
             "properties": {
                 "duration": {
@@ -22731,7 +23339,7 @@
                     "type": "string"
                 },
                 "stages": {
-                    "description": "流水线各 stage 的状态",
+                    "description": "流水线各阶段的状态列表。List of stage statuses in the pipeline.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.Stage"
@@ -22772,9 +23380,6 @@
                 "docker": {
                     "$ref": "#/definitions/dto.ContainerProvenance"
                 },
-                "dockermodel": {
-                    "$ref": "#/definitions/dto.DockerModelProvenance"
-                },
                 "generic": {
                     "$ref": "#/definitions/dto.CommonRegistryProvenance"
                 },
@@ -22789,6 +23394,9 @@
                 },
                 "nuget": {
                     "$ref": "#/definitions/dto.CommonRegistryProvenance"
+                },
+                "oci": {
+                    "$ref": "#/definitions/dto.OCIProvenance"
                 },
                 "ohpm": {
                     "$ref": "#/definitions/dto.CommonRegistryProvenance"
@@ -22865,7 +23473,7 @@
                     }
                 },
                 "guarded": {
-                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/dockermodel 可能为 true",
+                    "description": "Guarded 标记该标签下的制品是否被保护 仅 docker/helm/oci 可能为 true",
                     "type": "boolean"
                 },
                 "has_provenance": {
@@ -23392,25 +24000,60 @@
             "type": "object",
             "properties": {
                 "code_issue": {
-                    "$ref": "#/definitions/dto.CodeIssueSummary"
+                    "description": "源码扫描问题概览。Source code scanning issue overview.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.CodeIssueSummary"
+                        }
+                    ]
                 },
                 "code_license": {
-                    "$ref": "#/definitions/dto.CodeLicenseOverview"
+                    "description": "代码许可证概览。Code license overview.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.CodeLicenseOverview"
+                        }
+                    ]
                 },
                 "code_sbom": {
-                    "$ref": "#/definitions/dto.CodeSbomOverview"
+                    "description": "代码 SBOM 概览。Code SBOM overview.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.CodeSbomOverview"
+                        }
+                    ]
                 },
                 "code_sensitive": {
-                    "$ref": "#/definitions/dto.CodeSensitiveSummary"
+                    "description": "代码敏感信息概览。Code sensitive information overview.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.CodeSensitiveSummary"
+                        }
+                    ]
                 },
                 "code_vulnerability": {
-                    "$ref": "#/definitions/dto.CodeVulOverview"
+                    "description": "代码漏洞概览。Code vulnerability overview.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.CodeVulOverview"
+                        }
+                    ]
                 },
                 "risk_cnt": {
-                    "$ref": "#/definitions/dto.RepoSecurityRiskCnt"
+                    "description": "风险数量概览。Risk count overview.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.RepoSecurityRiskCnt"
+                        }
+                    ]
                 },
                 "skill_scan": {
-                    "$ref": "#/definitions/dto.SkillScanOverview"
+                    "description": "Skill 扫描概览。Skill scanning overview.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.SkillScanOverview"
+                        }
+                    ]
                 }
             }
         },
@@ -23709,6 +24352,10 @@
                     "description": "更新时间。Update time.",
                     "type": "string"
                 },
+                "visibility_change_lock": {
+                    "description": "是否锁定可见性变更。Whether the visibility is locked.",
+                    "type": "boolean"
+                },
                 "visibility_level": {
                     "description": "仓库可见性。Repository visibility level.",
                     "allOf": [
@@ -23995,6 +24642,7 @@
                     "type": "integer"
                 },
                 "compute_build_desc": {
+                    "description": "云原生构建 CPU 额度的说明文案。Description of the cloud-native build CPU quota.",
                     "type": "string"
                 },
                 "compute_build_expire": {
@@ -24006,6 +24654,7 @@
                     "type": "integer"
                 },
                 "compute_build_gpu_desc": {
+                    "description": "云原生构建 GPU 额度的说明文案。Description of the cloud-native build GPU quota.",
                     "type": "string"
                 },
                 "compute_build_gpu_expire": {
@@ -24017,6 +24666,7 @@
                     "type": "integer"
                 },
                 "compute_develop_desc": {
+                    "description": "云原生开发 CPU 额度的说明文案。Description of the cloud-native development CPU quota.",
                     "type": "string"
                 },
                 "compute_develop_expire": {
@@ -24028,6 +24678,7 @@
                     "type": "integer"
                 },
                 "compute_develop_gpu_desc": {
+                    "description": "云原生开发 GPU 额度的说明文案。Description of the cloud-native development GPU quota.",
                     "type": "string"
                 },
                 "compute_develop_gpu_expire": {
@@ -24039,6 +24690,7 @@
                     "type": "integer"
                 },
                 "credit_desc": {
+                    "description": "Credit 额度的说明文案。Description of the credit quota.",
                     "type": "string"
                 },
                 "credit_expire": {
@@ -24046,6 +24698,7 @@
                     "type": "string"
                 },
                 "storage_git_desc": {
+                    "description": "Git 存储额度的说明文案。Description of the Git storage quota.",
                     "type": "string"
                 },
                 "storage_git_expire": {
@@ -24057,6 +24710,7 @@
                     "type": "integer"
                 },
                 "storage_object_desc": {
+                    "description": "对象存储额度的说明文案。Description of the object storage quota.",
                     "type": "string"
                 },
                 "storage_object_expire": {
@@ -24070,22 +24724,23 @@
             }
         },
         "dto.Stage": {
+            "description": "流水线中单个阶段的状态，包含名称、状态、耗时与阶段 ID。 Status of a single stage in a pipeline, including name, status, duration and stage ID.",
             "type": "object",
             "properties": {
                 "duration": {
-                    "description": "stage 耗时。Stage duration.",
+                    "description": "阶段耗时。Stage duration.",
                     "type": "integer"
                 },
                 "id": {
-                    "description": "阶段ID。Stage ID.",
+                    "description": "阶段 ID。Stage ID.",
                     "type": "string"
                 },
                 "name": {
-                    "description": "stage 名称。Stage name.",
+                    "description": "阶段名称。Stage name.",
                     "type": "string"
                 },
                 "status": {
-                    "description": "stage 状态。Stage status.",
+                    "description": "阶段状态。Stage status.",
                     "type": "string"
                 }
             }
@@ -24156,6 +24811,7 @@
             }
         },
         "dto.StartBuildNpc": {
+            "description": "系统 NPC 触发标识，用于标记该构建由哪个 NPC 发起。 System NPC trigger marker, indicating which NPC triggers the build.",
             "type": "object",
             "properties": {
                 "name": {
@@ -24169,6 +24825,7 @@
             }
         },
         "dto.StartBuildReq": {
+            "description": "触发一次流水线构建的请求参数，可指定分支、提交、构建变量与 NPC 触发标识。 Params for triggering a pipeline build. Branch, commit, build variables and NPC trigger marker can be specified.",
             "type": "object",
             "properties": {
                 "branch": {
@@ -24176,7 +24833,7 @@
                     "type": "string"
                 },
                 "config": {
-                    "description": "指定配置文件内容，yaml 格式。Config file content in YAML format.",
+                    "description": "指定流水线配置内容，YAML 格式。Pipeline config content in YAML format.",
                     "type": "string"
                 },
                 "env": {
@@ -24199,11 +24856,11 @@
                     ]
                 },
                 "sha": {
-                    "description": "commit id ，优先级比 tag 高，默认为分支最新提交记录。Commit ID, higher priority than tag, defaults to the latest commit of the branch.",
+                    "description": "提交 SHA，优先级比 tag 高，默认为分支最新提交。Commit SHA, higher priority than tag, defaults to the latest commit of the branch.",
                     "type": "string"
                 },
                 "sync": {
-                    "description": "是否等待构建触发，false 立即返回 sn 和 url。Whether to wait; false returns sn and buildLogUrl now.",
+                    "description": "是否等待构建完成，false 时立即返回 sn 与构建链接。Whether to wait for the build; false returns SN and build URL immediately.",
                     "type": "string"
                 },
                 "tag": {
@@ -24265,9 +24922,6 @@
                 "docker": {
                     "$ref": "#/definitions/dto.ContainerTagDetail"
                 },
-                "dockermodel": {
-                    "$ref": "#/definitions/dto.DockerModelTagDetail"
-                },
                 "generic": {
                     "$ref": "#/definitions/dto.CommonRegistryTagDetail"
                 },
@@ -24282,6 +24936,9 @@
                 },
                 "nuget": {
                     "$ref": "#/definitions/dto.CommonRegistryTagDetail"
+                },
+                "oci": {
+                    "$ref": "#/definitions/dto.OCITagDetail"
                 },
                 "ohpm": {
                     "$ref": "#/definitions/dto.CommonRegistryTagDetail"
@@ -24674,10 +25331,6 @@
                     "description": "是否冻结。Whether the user is frozen.",
                     "type": "boolean"
                 },
-                "gender": {
-                    "description": "性别。Gender.",
-                    "type": "integer"
-                },
                 "group_count": {
                     "description": "组织数。Organization count.",
                     "type": "integer"
@@ -25014,12 +25667,20 @@
         "dto.WorkspaceDetailResult": {
             "type": "object",
             "properties": {
+                "antigravity": {
+                    "description": "Antigravity 客户端 remote-ssh schema。Antigravity client remote-ssh schema.",
+                    "type": "string"
+                },
                 "codebuddy": {
                     "description": "CodeBuddy 国际版 remote-ssh schema。CodeBuddy international remote-ssh schema.",
                     "type": "string"
                 },
                 "codebuddycn": {
                     "description": "CodeBuddy 国内版 remote-ssh schema。CodeBuddy CN remote-ssh schema.",
+                    "type": "string"
+                },
+                "codebuddyweb": {
+                    "description": "CodeBuddy Web 访问 url。CodeBuddy Web access URL.",
                     "type": "string"
                 },
                 "cursor": {
@@ -25037,12 +25698,24 @@
                     "description": "选择入口页面 url。Entry page URL.",
                     "type": "string"
                 },
+                "qoder": {
+                    "description": "Qoder 客户端 remote-ssh 访问 schema 地址。Qoder client remote-ssh access schema address.",
+                    "type": "string"
+                },
                 "remoteSsh": {
                     "description": "remote-ssh 连接地址。Remote-ssh connection address.",
                     "type": "string"
                 },
                 "ssh": {
                     "description": "ssh 登录命令。SSH login command.",
+                    "type": "string"
+                },
+                "trae": {
+                    "description": "Trae 国际版 remote-ssh schema。Trae international remote-ssh schema.",
+                    "type": "string"
+                },
+                "trae-cn": {
+                    "description": "Trae 国内版 remote-ssh schema。Trae CN remote-ssh schema.",
                     "type": "string"
                 },
                 "vscode": {
@@ -25055,6 +25728,18 @@
                 },
                 "webide": {
                     "description": "WebIDE 访问 url。WebIDE access URL.",
+                    "type": "string"
+                },
+                "windsurf": {
+                    "description": "Windsurf 客户端 remote-ssh schema。Windsurf client remote-ssh schema.",
+                    "type": "string"
+                },
+                "windsurf-next": {
+                    "description": "Windsurf 预览版 remote-ssh schema。Windsurf Next remote-ssh schema.",
+                    "type": "string"
+                },
+                "zed": {
+                    "description": "Zed 客户端 ssh 访问 schema 地址。Zed client ssh access schema address.",
                     "type": "string"
                 }
             }
@@ -25352,12 +26037,15 @@
             }
         },
         "mission_mission-resource_dto_web.UserInfo": {
+            "description": "任务集资源中内嵌的用户精简信息。 Condensed user info embedded in mission resources.",
             "type": "object",
             "properties": {
                 "nickname": {
+                    "description": "用户昵称。User nickname.",
                     "type": "string"
                 },
                 "username": {
+                    "description": "用户名。Username.",
                     "type": "string"
                 }
             }
@@ -25393,13 +26081,6 @@
                         "$ref": "#/definitions/dto.ContainerTag"
                     }
                 },
-                "dockermodel": {
-                    "description": "Docker 模型制品标签列表。Docker model tags.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.DockerModelTag"
-                    }
-                },
                 "generic": {
                     "description": "通用制品标签列表。Generic tags.",
                     "type": "array",
@@ -25433,6 +26114,13 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.CommonRegistryTag"
+                    }
+                },
+                "oci": {
+                    "description": "OCI 制品标签列表。OCI tags.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.OCITag"
                     }
                 },
                 "ohpm": {
@@ -25772,7 +26460,12 @@
                 "enable_other_group_npc_add_comment",
                 "disable_invite_auth_control",
                 "only_repo_member_can_mention_npc",
-                "allow_npc_cross_repo"
+                "allow_npc_cross_repo",
+                "allow_cron_cross_repo",
+                "allow_uncredible_cross_repo",
+                "disable_repo_event_auto_trigger",
+                "disable_repo_cron_auto_trigger",
+                "disable_repo_npc_auto_trigger"
             ],
             "x-enum-comments": {
                 "CloudNativeDevOnly": "CloudNativeDevOnly 仅可使用云原生开发, 以组织设置为准",
@@ -25796,8 +26489,13 @@
                 "UseGroupGitQuota": "UseGroupGitQuota 是否使用组织的仓库配额",
                 "UseRootGroupBranchProtectionOnly": "UseRootGroupBranchProtectionOnly 支持重写分支保护规则，打开时，如果保护分支规则存在差异，可以覆盖根组织的规则",
                 "UseRootGroupGitPushLimit": "UseRootGroupGitPushLimit 开启根组织推送管控选项",
+                "allowCronCrossRepo": "allowCronCrossRepo 开启后，定时任务不再局限于当前仓库，可以在根组织下的所有仓库之间自由访问，执行跨仓任务。",
                 "allowNpcCrossRepo": "allowNpcCrossRepo 开启后，NPC 不再局限于当前仓库，可以在根组织下的所有仓库之间自由协作，自动处理跨仓任务。",
+                "allowUncredibleCrossRepo": "allowUncredibleCrossRepo 开启后，不可信事件（PR、Issue、评论）不再局限于当前仓库，可以在根组织下的所有仓库之间自由访问。",
                 "disableInviteAuthControl": "disableInviteAuthControl 关闭邀请认证管控",
+                "disableRepoCronAutoTrigger": "disableRepoCronAutoTrigger 置位后，根组织下全部仓库的定时任务均不自动触发云原生构建（组织级总开关，仓库开关不可绕过）。",
+                "disableRepoEventAutoTrigger": "disableRepoEventAutoTrigger 置位后，根组织下全部仓库的事件均不自动触发云原生构建（组织级总开关，仓库开关不可绕过；刻意用「禁用」语义：未置位 = 未启用该管控 = 放行，保证存量组织的自动触发行为不变）。",
+                "disableRepoNpcAutoTrigger": "disableRepoNpcAutoTrigger 置位后，根组织下全部仓库均不允许 NPC 自动触发云原生构建（组织级总开关，仓库开关不可绕过）。",
                 "enableAddMember": "enableAddMember 开启后, 允许子组织管理员和负责人添加成员到其负责的组织/仓库/制品库/任务集",
                 "enableAddMemberOnlyRoot": "enableAddMemberOnlyRoot 开启后, 仅根组织管理员和负责人可添加成员加入根组织下所有子组织和仓库",
                 "enableChangeMemberRoleOnlyRoot": "enableChangeMemberRoleOnlyRoot 开启后, 仅根组织管理员和负责人可修改成员角色",
@@ -25832,7 +26530,12 @@
                 "enableOtherGroupNPCAddComment 开启后, 允许其他根组织的npc在根组织内增加评论",
                 "disableInviteAuthControl 关闭邀请认证管控",
                 "onlyRepoMemberCanMentionNPC 开启后, 外部用户无法@NPC, 仅组织成员（含外部协作者）可@",
-                "allowNpcCrossRepo 开启后，NPC 不再局限于当前仓库，可以在根组织下的所有仓库之间自由协作，自动处理跨仓任务。"
+                "allowNpcCrossRepo 开启后，NPC 不再局限于当前仓库，可以在根组织下的所有仓库之间自由协作，自动处理跨仓任务。",
+                "allowCronCrossRepo 开启后，定时任务不再局限于当前仓库，可以在根组织下的所有仓库之间自由访问，执行跨仓任务。",
+                "allowUncredibleCrossRepo 开启后，不可信事件（PR、Issue、评论）不再局限于当前仓库，可以在根组织下的所有仓库之间自由访问。",
+                "disableRepoEventAutoTrigger 置位后，根组织下全部仓库的事件均不自动触发云原生构建（组织级总开关，仓库开关不可绕过；刻意用「禁用」语义：未置位 = 未启用该管控 = 放行，保证存量组织的自动触发行为不变）。",
+                "disableRepoCronAutoTrigger 置位后，根组织下全部仓库的定时任务均不自动触发云原生构建（组织级总开关，仓库开关不可绕过）。",
+                "disableRepoNpcAutoTrigger 置位后，根组织下全部仓库均不允许 NPC 自动触发云原生构建（组织级总开关，仓库开关不可绕过）。"
             ],
             "x-enum-varnames": [
                 "DisableOrganizationReadme",
@@ -25862,7 +26565,12 @@
                 "enableOtherGroupNPCAddComment",
                 "disableInviteAuthControl",
                 "onlyRepoMemberCanMentionNPC",
-                "allowNpcCrossRepo"
+                "allowNpcCrossRepo",
+                "allowCronCrossRepo",
+                "allowUncredibleCrossRepo",
+                "disableRepoEventAutoTrigger",
+                "disableRepoCronAutoTrigger",
+                "disableRepoNpcAutoTrigger"
             ]
         },
         "web.CommitAnnotation": {
@@ -25919,30 +26627,42 @@
             }
         },
         "web.IssueResource": {
+            "description": "任务集资源列表中的 Issue 精简对象。 Condensed issue object in mission resource list.",
             "type": "object",
             "properties": {
                 "assignees": {
+                    "description": "负责人列表。Assignee list.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/mission_mission-resource_dto_web.UserInfo"
                     }
                 },
                 "author": {
-                    "$ref": "#/definitions/mission_mission-resource_dto_web.UserInfo"
+                    "description": "作者。Author.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/mission_mission-resource_dto_web.UserInfo"
+                        }
+                    ]
                 },
                 "closed_at": {
+                    "description": "关闭时间。Closed at.",
                     "type": "string"
                 },
                 "comment_count": {
+                    "description": "评论数。Comment count.",
                     "type": "integer"
                 },
                 "created_at": {
+                    "description": "创建时间。Created at.",
                     "type": "string"
                 },
                 "ended_at": {
+                    "description": "结束时间。Ended at.",
                     "type": "string"
                 },
                 "id": {
+                    "description": "Issue ID。Issue ID.",
                     "type": "string"
                 },
                 "invisible": {
@@ -25950,88 +26670,115 @@
                     "type": "boolean"
                 },
                 "labels": {
+                    "description": "标签列表。Label list.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/web.LabelOptionLite"
                     }
                 },
                 "last_acted_at": {
+                    "description": "最近动态时间。Last acted at.",
                     "type": "string"
                 },
                 "number": {
+                    "description": "Issue 编号。Issue number.",
                     "type": "string"
                 },
                 "priority": {
+                    "description": "优先级。Priority.",
                     "type": "string"
                 },
                 "properties": {
+                    "description": "自定义属性列表。Custom property list.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/web.Property"
                     }
                 },
                 "repo_slug": {
+                    "description": "仓库路径。Repository slug.",
                     "type": "string"
                 },
                 "started_at": {
+                    "description": "开始时间。Started at.",
                     "type": "string"
                 },
                 "state": {
+                    "description": "状态: open/closed。State.",
                     "type": "string"
                 },
                 "state_reason": {
+                    "description": "状态原因。State reason.",
                     "type": "string"
                 },
                 "title": {
+                    "description": "标题。Title.",
                     "type": "string"
                 },
                 "updated_at": {
+                    "description": "更新时间。Updated at.",
                     "type": "string"
                 }
             }
         },
         "web.LabelOptionLite": {
+            "description": "Issue/PR 列表内嵌的标签精简结构。 Condensed label structure embedded in issue/PR lists.",
             "type": "object",
             "properties": {
                 "color": {
+                    "description": "标签颜色。Label color.",
                     "type": "string"
                 },
                 "id": {
+                    "description": "标签 ID。Label ID.",
                     "type": "string"
                 },
                 "name": {
+                    "description": "标签名称。Label name.",
                     "type": "string"
                 },
                 "slug": {
+                    "description": "仓库路径。Repository slug.",
                     "type": "string"
                 }
             }
         },
         "web.MissionField": {
+            "description": "任务集资源的可筛选字段元数据，用于前端构建筛选器。 Filterable field metadata of mission resources, used to build frontend filters.",
             "type": "object",
             "properties": {
                 "interaction_type": {
-                    "$ref": "#/definitions/dto.InteractionType"
+                    "description": "交互类型。Interaction type.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dto.InteractionType"
+                        }
+                    ]
                 },
                 "name": {
+                    "description": "字段名。Field name.",
                     "type": "string"
                 },
                 "operators": {
+                    "description": "支持的筛选操作符。Supported filter operators.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.OperatorType"
                     }
                 },
                 "value": {
+                    "description": "可选值列表。Candidate values.",
                     "type": "array",
                     "items": {}
                 }
             }
         },
         "web.MissionResources": {
+            "description": "任务集资源列表响应，包含 Issue 或 PR 列表、总数与分页游标。 Mission resource list response, including issue or PR list, total and pagination cursor.",
             "type": "object",
             "properties": {
                 "issues": {
+                    "description": "Issue 列表。Issue list.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/web.IssueResource"
@@ -26042,132 +26789,172 @@
                     "type": "string"
                 },
                 "pull_requests": {
+                    "description": "合并请求列表。Pull request list.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/web.PullRequestResource"
                     }
                 },
                 "total": {
+                    "description": "记录总数。Total count.",
                     "type": "integer"
                 }
             }
         },
         "web.Property": {
+            "description": "Issue/PR 上的自定义属性键值对。 Custom property key-value pair on an issue or pull request.",
             "type": "object",
             "properties": {
                 "key": {
+                    "description": "属性键。Property key.",
                     "type": "string"
                 },
                 "name": {
+                    "description": "属性名称。Property name.",
                     "type": "string"
                 },
                 "type": {
+                    "description": "属性类型: string/date/number。Property type.",
                     "type": "string"
                 },
                 "value": {
+                    "description": "属性值。Property value.",
                     "type": "string"
                 }
             }
         },
         "web.PullRequestResource": {
+            "description": "任务集资源列表中的合并请求（Pull Request）精简对象。 Condensed pull request object in mission resource list.",
             "type": "object",
             "properties": {
                 "assignees": {
+                    "description": "负责人列表。Assignee list.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/mission_mission-resource_dto_web.UserInfo"
                     }
                 },
                 "author": {
-                    "$ref": "#/definitions/mission_mission-resource_dto_web.UserInfo"
+                    "description": "作者。Author.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/mission_mission-resource_dto_web.UserInfo"
+                        }
+                    ]
                 },
                 "base_repo_ref": {
+                    "description": "目标分支。Target branch.",
                     "type": "string"
                 },
                 "blocked_on": {
+                    "description": "阻塞原因。Blocked reason.",
                     "type": "string"
                 },
                 "comment_count": {
+                    "description": "评论数。Comment count.",
                     "type": "integer"
                 },
                 "commit_count": {
+                    "description": "提交数。Commit count.",
                     "type": "integer"
                 },
                 "created_at": {
+                    "description": "创建时间。Created at.",
                     "type": "string"
                 },
                 "file_count": {
+                    "description": "变更文件数。Changed file count.",
                     "type": "integer"
                 },
                 "head_repo_ref": {
+                    "description": "源分支。Source branch.",
                     "type": "string"
                 },
                 "id": {
+                    "description": "合并请求 ID。Pull request ID.",
                     "type": "string"
                 },
                 "is_merged": {
+                    "description": "是否已合并。Whether merged.",
                     "type": "boolean"
                 },
                 "is_ready_for_merge": {
+                    "description": "是否已满足合并条件。Whether ready for merge.",
                     "type": "boolean"
                 },
                 "labels": {
+                    "description": "标签列表。Label list.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/web.LabelOptionLite"
                     }
                 },
                 "last_acted_at": {
+                    "description": "最近动态时间。Last acted at.",
                     "type": "string"
                 },
                 "merge_style": {
+                    "description": "合并方式。Merge style.",
                     "type": "string"
                 },
                 "mergeable_state": {
+                    "description": "可合并状态。Mergeable state.",
                     "type": "string"
                 },
                 "number": {
+                    "description": "合并请求编号。Pull request number.",
                     "type": "string"
                 },
                 "properties": {
+                    "description": "自定义属性列表。Custom property list.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/web.Property"
                     }
                 },
                 "repo_slug": {
+                    "description": "仓库路径。Repository slug.",
                     "type": "string"
                 },
                 "reviewers": {
+                    "description": "评审人列表。Reviewer list.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/web.PullRequestResourceReviewer"
                     }
                 },
                 "state": {
+                    "description": "状态: open/closed/merged。State.",
                     "type": "string"
                 },
                 "status_check_commit_sha": {
+                    "description": "状态检查对应的提交 SHA。Commit SHA of the status check.",
                     "type": "string"
                 },
                 "title": {
+                    "description": "标题。Title.",
                     "type": "string"
                 },
                 "updated_at": {
+                    "description": "更新时间。Updated at.",
                     "type": "string"
                 }
             }
         },
         "web.PullRequestResourceReviewer": {
+            "description": "任务集资源列表中内嵌的合并请求评审人信息。 Reviewer of a pull request embedded in mission resource list.",
             "type": "object",
             "properties": {
                 "nickname": {
+                    "description": "评审人昵称。Reviewer nickname.",
                     "type": "string"
                 },
                 "review_state": {
+                    "description": "评审状态: approved/... 。Review state.",
                     "type": "string"
                 },
                 "username": {
+                    "description": "评审人用户名。Reviewer username.",
                     "type": "string"
                 }
             }
