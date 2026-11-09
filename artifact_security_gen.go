@@ -12,8 +12,8 @@ import (
 // 访问令牌权限: registry-security:r
 //
 // CNB API: GET /{slug}/-/sca-artifact-scan/{type}/{name}/-/tag/{tag}/security/overview
-func (s *ArtifactSecurityService) GetArtifactSecurityOverview(ctx context.Context, pkgType string, name string, tag string, opts *GetArtifactSecurityOverviewOptions) (*OpenAPIArtifactOverview, *Response, error) {
-	u := escapePath("/{slug}/-/sca-artifact-scan/%s/%s/-/tag/%s/security/overview", pkgType, name, tag)
+func (s *ArtifactSecurityService) GetArtifactSecurityOverview(ctx context.Context, slug string, pkgType string, name string, tag string, opts *GetArtifactSecurityOverviewOptions) (*OpenAPIArtifactOverview, *Response, error) {
+	u := escapePath("/%s/-/sca-artifact-scan/%s/%s/-/tag/%s/security/overview", slug, pkgType, name, tag)
 	if opts != nil {
 		var err error
 		u, err = addQuery(u, opts)

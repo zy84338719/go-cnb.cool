@@ -70,6 +70,8 @@ type BranchProtection struct {
 	RequiredApprovedReviewCount *int `json:"required_approved_review_count,omitempty"`
 	// RequiredApprovedReviewRatio 需要的评审通过率。格式：`通过率 ∈ [1, 100]`。Required approval rate. `∈ [1, 100]`.
 	RequiredApprovedReviewRatio *int `json:"required_approved_review_ratio,omitempty"`
+	// RequiredCodeownerApprove 是否需至少一个代码所有者批准。Whether at least one code owner approval is required.
+	RequiredCodeownerApprove *bool `json:"required_codeowner_approve,omitempty"`
 	// RequiredLinearHistory 是否仅允许线性提交。Whether only linear commits are allowed.
 	RequiredLinearHistory *bool `json:"required_linear_history,omitempty"`
 	// RequiredMasterApprove 是否需至少一个仓库管理员批准。Whether at least one repo admin approval is required.
@@ -78,6 +80,8 @@ type BranchProtection struct {
 	RequiredMustAutoMerge *bool `json:"required_must_auto_merge,omitempty"`
 	// RequiredMustPushViaPullRequest 是否必须通过合并请求推送代码到此规则匹配分支中。Push must be via merge requests.
 	RequiredMustPushViaPullRequest *bool `json:"required_must_push_via_pull_request,omitempty"`
+	// RequiredNpcApprove 是否需至少一个 NPC 批准。Whether at least one NPC approval is required.
+	RequiredNpcApprove *bool `json:"required_npc_approve,omitempty"`
 	// RequiredPullRequestReviews 保护分支的合并请求是否需要代码评审。Code review required for merge requests.
 	RequiredPullRequestReviews *bool `json:"required_pull_request_reviews,omitempty"`
 	// RequiredStatusChecks 是否需要通过状态检查。Whether status checks are required.
@@ -185,8 +189,6 @@ type CommitAsset struct {
 	ContentType string `json:"content_type"`
 	// CreatedAt 附件创建时间。Attachment created at.
 	CreatedAt string `json:"created_at"`
-	// DownloadCount 下载次数。Download count.
-	DownloadCount int `json:"download_count"`
 	// HashAlgo 附件哈希算法。Attachment hash algorithm.
 	HashAlgo string `json:"hash_algo"`
 	// HashValue 附件哈希值。Attachment hash.
@@ -316,6 +318,8 @@ type ContributorTrend struct {
 	Author Author `json:"author"`
 	// CommitCount 贡献者的总提交数。 Total commits by the contributor.
 	CommitCount int `json:"commit_count"`
+	// NpcCommitCount 贡献者的 NPC 提交数。NPC commits by the contributor.
+	NpcCommitCount int `json:"npc_commit_count"`
 	// Weeks 贡献者以周为单位的提交趋势数据。 Contributor weekly commit trend data.
 	Weeks []Week `json:"weeks"`
 }
@@ -563,7 +567,7 @@ type MergePullRequest struct {
 	CommitTitle *string `json:"commit_title,omitempty"`
 	// Force 是否强制合并。Whether to force merge, only allowed for repository owner or admin.
 	Force *bool `json:"force,omitempty"`
-	// MergeStyle 合并提交方式。可选值：`merge`,`squash`,`rebase`
+	// MergeStyle 合并提交方式。可选值：`merge`,`squash`,`rebase`, `fast_forward`
 	MergeStyle *string `json:"merge_style,omitempty"`
 }
 
@@ -635,6 +639,14 @@ type PatchPullRequest struct {
 	State *string `json:"state,omitempty"`
 	// Title 合并请求的更新标题。Merge request updated title.
 	Title *string `json:"title,omitempty"`
+}
+
+type PatchPullReviewCommentForm struct {
+	Body *string `json:"body,omitempty"`
+}
+
+type PatchPullReviewForm struct {
+	Body *string `json:"body,omitempty"`
 }
 
 type PipelineSettings struct {
@@ -757,6 +769,8 @@ type Pull struct {
 	BlockedOn string `json:"blocked_on"`
 	// Body 合并请求内容。Merge request content.
 	Body string `json:"body"`
+	// ClosedAt 关闭或合并时间。Closed or merged time.
+	ClosedAt string `json:"closed_at"`
 	// Head 源分支信息。 Source branch info.
 	Head PullRef `json:"head"`
 	// IsForceMerged 是否强制合并。Whether the pull request was force-merged, bypassing branch protection rules.
@@ -853,6 +867,8 @@ type PullRequest struct {
 	BlockedOn string `json:"blocked_on"`
 	// Body 合并请求内容。Merge request content.
 	Body string `json:"body"`
+	// ClosedAt 关闭或合并时间。Closed or merged time.
+	ClosedAt string `json:"closed_at"`
 	// CommentCount 评论数量。Comment count.
 	CommentCount int `json:"comment_count"`
 	// CreatedAt 创建时间。Created at.
@@ -913,6 +929,8 @@ type PullRequestInfo struct {
 	Base PullRefInfo `json:"base"`
 	// BlockedOn 阻塞原因。枚举值：`no_merge_base`,`internal_error`,`code_conflict`,`status_check`,`waiting_review`
 	BlockedOn string `json:"blocked_on"`
+	// ClosedAt 关闭或合并时间。Closed or merged time.
+	ClosedAt string `json:"closed_at"`
 	// CreatedAt 创建时间。Created at.
 	CreatedAt string `json:"created_at"`
 	// Head 源分支信息。 Source branch info.
@@ -1106,8 +1124,6 @@ type ReleaseAsset struct {
 	ContentType string `json:"content_type"`
 	// CreatedAt 创建时间。Created at.
 	CreatedAt string `json:"created_at"`
-	// DownloadCount 下载次数。Download count.
-	DownloadCount int `json:"download_count"`
 	// HashAlgo 附件哈希算法。Attachment hash algorithm.
 	HashAlgo string `json:"hash_algo"`
 	// HashValue 附件哈希值。Attachment hash.
@@ -1139,6 +1155,14 @@ type ApiRepo struct {
 	WebUrl string `json:"web_url"`
 }
 
+type RepoContribSimply struct {
+	Meta          Meta                    `json:"meta"`
+	Top100Contrib []UserContributorSimply `json:"top_100_contrib"`
+	Total         int                     `json:"total"`
+	// WithNpcCounts 是否包含 NPC 提交统计，为 false 时 npc_commit_count 无意义。Whether NPC commit counts are available.
+	WithNpcCounts bool `json:"with_npc_counts"`
+}
+
 type RepoContribTrend struct {
 	// Meta 元数据信息，包含生成分支、哈希和时间戳。Metadata information, including generation branch, hash, and timestamp.
 	Meta Meta `json:"meta"`
@@ -1152,6 +1176,8 @@ type RepoContribTrend struct {
 	WeekTotal int `json:"week_total"`
 	// WithLineCounts 是否统计增删的行数，默认总提交超过10000的仓库不统计。Count added/deleted lines. Off for repos >10000 commits.
 	WithLineCounts bool `json:"with_line_counts"`
+	// WithNpcCounts 是否包含 NPC 提交统计，为 false 时 n / npc_commit_count 无意义。Whether NPC commit counts are available.
+	WithNpcCounts bool `json:"with_npc_counts"`
 }
 
 type RepoInfo struct {
@@ -1252,6 +1278,14 @@ type TreeEntry struct {
 	Type string `json:"type"`
 }
 
+type UserContributorSimply struct {
+	CommitCount int    `json:"commit_count"`
+	Email       string `json:"email"`
+	// NpcCommitCount NPC 提交数（commit 在 refs/notes/npc-push 上有 note）。NPC commit count.
+	NpcCommitCount int    `json:"npc_commit_count"`
+	UserName       string `json:"user_name"`
+}
+
 type UserInfo struct {
 	// Avatar 用户头像。User avatar.
 	Avatar string `json:"avatar"`
@@ -1311,6 +1345,8 @@ type Week struct {
 	C int `json:"c"`
 	// D 每周删除的行数。 Number of lines deleted per week.
 	D int `json:"d"`
+	// N 每周的 NPC 提交数量，为 0 时省略。Number of NPC commits per week, omitted when 0.
+	N int `json:"n"`
 	// W 周的时间戳。Week timestamp.
 	W int `json:"w"`
 }

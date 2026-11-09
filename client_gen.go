@@ -24,6 +24,7 @@ type Client struct {
 	Activities       *ActivitiesService
 	ArtifactSecurity *ArtifactSecurityService
 	Assets           *AssetsService
+	Authentication   *AuthenticationService
 	Badge            *BadgeService
 	Build            *BuildService
 	Charge           *ChargeService
@@ -70,6 +71,11 @@ type ArtifactSecurityService struct {
 
 // AssetsService 封装 Assets 分类的 CNB API.
 type AssetsService struct {
+	client *Client
+}
+
+// AuthenticationService 封装 Authentication 分类的 CNB API.
+type AuthenticationService struct {
 	client *Client
 }
 
@@ -214,6 +220,7 @@ func (c *Client) initServices() {
 	c.Activities = &ActivitiesService{client: c}
 	c.ArtifactSecurity = &ArtifactSecurityService{client: c}
 	c.Assets = &AssetsService{client: c}
+	c.Authentication = &AuthenticationService{client: c}
 	c.Badge = &BadgeService{client: c}
 	c.Build = &BuildService{client: c}
 	c.Charge = &ChargeService{client: c}

@@ -163,6 +163,32 @@ func (s *IssuesService) PostIssueImageAssetUploadURL(ctx context.Context, repo s
 	return &out, resp, nil
 }
 
+// GetIssuesInBatch 批量查询 Issue。Batch get issues.
+//
+// 访问令牌权限: repo-issue:r
+//
+// CNB API: GET /{repo}/-/issues/batch
+func (s *IssuesService) GetIssuesInBatch(ctx context.Context, repo string, opts *GetIssuesInBatchOptions) ([]*Issue, *Response, error) {
+	u := escapePath("/%s/-/issues/batch", repo)
+	if opts != nil {
+		var err error
+		u, err = addQuery(u, opts)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+	req, err := s.client.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	var out []*Issue
+	resp, err := s.client.Do(ctx, req, &out)
+	if err != nil {
+		return nil, resp, err
+	}
+	return out, resp, nil
+}
+
 // GetIssue 获取 Issue。Get issue.
 //
 // 访问令牌权限: repo-issue:r

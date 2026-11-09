@@ -584,6 +584,25 @@ func (s *PullsService) PostPullReview(ctx context.Context, repo string, number s
 	return s.client.Do(ctx, req, nil)
 }
 
+// PatchPullReview 更新合并请求评论。Update pull request review.
+//
+// 访问令牌权限: repo-pr:r
+//
+// CNB API: PATCH /{repo}/-/pulls/{number}/reviews/{review_id}
+func (s *PullsService) PatchPullReview(ctx context.Context, repo string, number string, reviewId int, body PatchPullReviewForm) (*PullReview, *Response, error) {
+	u := escapePath("/%s/-/pulls/%s/reviews/%d", repo, number, reviewId)
+	req, err := s.client.NewRequest(http.MethodPatch, u, body)
+	if err != nil {
+		return nil, nil, err
+	}
+	var out PullReview
+	resp, err := s.client.Do(ctx, req, &out)
+	if err != nil {
+		return nil, resp, err
+	}
+	return &out, resp, nil
+}
+
 // ListPullReviewComments 查询评审评论列表。List review comments.
 //
 // 访问令牌权限: repo-notes:r
@@ -608,6 +627,25 @@ func (s *PullsService) ListPullReviewComments(ctx context.Context, repo string, 
 		return nil, resp, err
 	}
 	return out, resp, nil
+}
+
+// PatchPullReviewComment 更新合并请求评审评论。Update pull request review comment.
+//
+// 访问令牌权限: repo-pr:r
+//
+// CNB API: PATCH /{repo}/-/pulls/{number}/reviews/{review_id}/comments/{review_comment_id}
+func (s *PullsService) PatchPullReviewComment(ctx context.Context, repo string, number string, reviewId int, body PatchPullReviewCommentForm) (*PullReviewComment, *Response, error) {
+	u := escapePath("/%s/-/pulls/%s/reviews/%d/comments/{review_comment_id}", repo, number, reviewId)
+	req, err := s.client.NewRequest(http.MethodPatch, u, body)
+	if err != nil {
+		return nil, nil, err
+	}
+	var out PullReviewComment
+	resp, err := s.client.Do(ctx, req, &out)
+	if err != nil {
+		return nil, resp, err
+	}
+	return &out, resp, nil
 }
 
 // PostPullRequestReviewReply 回复评审评论。Reply to review comment.
