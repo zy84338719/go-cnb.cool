@@ -27,89 +27,156 @@ type GetCommitAnnotationsInBatchForm struct {
 	Keys []string `json:"keys,omitempty"`
 }
 
+// IssueResource 任务集资源列表中的 Issue 精简对象。 Condensed issue object in mission resource list.
 type IssueResource struct {
-	Assignees    []MissionMissionResourceDtoWebUserInfo `json:"assignees"`
-	Author       MissionMissionResourceDtoWebUserInfo   `json:"author"`
-	ClosedAt     string                                 `json:"closed_at"`
-	CommentCount int                                    `json:"comment_count"`
-	CreatedAt    string                                 `json:"created_at"`
-	EndedAt      string                                 `json:"ended_at"`
-	Id           string                                 `json:"id"`
+	// Assignees 负责人列表。Assignee list.
+	Assignees []MissionMissionResourceDtoWebUserInfo `json:"assignees"`
+	// Author 作者。Author.
+	Author MissionMissionResourceDtoWebUserInfo `json:"author"`
+	// ClosedAt 关闭时间。Closed at.
+	ClosedAt string `json:"closed_at"`
+	// CommentCount 评论数。Comment count.
+	CommentCount int `json:"comment_count"`
+	// CreatedAt 创建时间。Created at.
+	CreatedAt string `json:"created_at"`
+	// EndedAt 结束时间。Ended at.
+	EndedAt string `json:"ended_at"`
+	// Id Issue ID。Issue ID.
+	Id string `json:"id"`
 	// Invisible 是否为私密 issue。Whether the issue is private.
-	Invisible   bool              `json:"invisible"`
-	Labels      []LabelOptionLite `json:"labels"`
-	LastActedAt string            `json:"last_acted_at"`
-	Number      string            `json:"number"`
-	Priority    string            `json:"priority"`
-	Properties  []Property        `json:"properties"`
-	RepoSlug    string            `json:"repo_slug"`
-	StartedAt   string            `json:"started_at"`
-	State       string            `json:"state"`
-	StateReason string            `json:"state_reason"`
-	Title       string            `json:"title"`
-	UpdatedAt   string            `json:"updated_at"`
+	Invisible bool `json:"invisible"`
+	// Labels 标签列表。Label list.
+	Labels []LabelOptionLite `json:"labels"`
+	// LastActedAt 最近动态时间。Last acted at.
+	LastActedAt string `json:"last_acted_at"`
+	// Number Issue 编号。Issue number.
+	Number string `json:"number"`
+	// Priority 优先级。Priority.
+	Priority string `json:"priority"`
+	// Properties 自定义属性列表。Custom property list.
+	Properties []Property `json:"properties"`
+	// RepoSlug 仓库路径。Repository slug.
+	RepoSlug string `json:"repo_slug"`
+	// StartedAt 开始时间。Started at.
+	StartedAt string `json:"started_at"`
+	// State 状态: open/closed。State.
+	State string `json:"state"`
+	// StateReason 状态原因。State reason.
+	StateReason string `json:"state_reason"`
+	// Title 标题。Title.
+	Title string `json:"title"`
+	// UpdatedAt 更新时间。Updated at.
+	UpdatedAt string `json:"updated_at"`
 }
 
+// LabelOptionLite Issue/PR 列表内嵌的标签精简结构。 Condensed label structure embedded in issue/PR lists.
 type LabelOptionLite struct {
+	// Color 标签颜色。Label color.
 	Color string `json:"color"`
-	Id    string `json:"id"`
-	Name  string `json:"name"`
-	Slug  string `json:"slug"`
+	// Id 标签 ID。Label ID.
+	Id string `json:"id"`
+	// Name 标签名称。Label name.
+	Name string `json:"name"`
+	// Slug 仓库路径。Repository slug.
+	Slug string `json:"slug"`
 }
 
+// MissionField 任务集资源的可筛选字段元数据，用于前端构建筛选器。 Filterable field metadata of mission resources, used to build frontend filters.
 type MissionField struct {
-	InteractionType InteractionType   `json:"interaction_type"`
-	Name            string            `json:"name"`
-	Operators       []OperatorType    `json:"operators"`
-	Value           []json.RawMessage `json:"value"`
+	// InteractionType 交互类型。Interaction type.
+	InteractionType InteractionType `json:"interaction_type"`
+	// Name 字段名。Field name.
+	Name string `json:"name"`
+	// Operators 支持的筛选操作符。Supported filter operators.
+	Operators []OperatorType `json:"operators"`
+	// Value 可选值列表。Candidate values.
+	Value []json.RawMessage `json:"value"`
 }
 
+// MissionResources 任务集资源列表响应，包含 Issue 或 PR 列表、总数与分页游标。 Mission resource list response, including issue or PR list, total and pagination cursor.
 type MissionResources struct {
+	// Issues Issue 列表。Issue list.
 	Issues []IssueResource `json:"issues"`
 	// NextCursor NextCursor 游标分页：下一页游标（最后一条记录的 id）；无更多数据时为空。
-	NextCursor   string                `json:"next_cursor"`
+	NextCursor string `json:"next_cursor"`
+	// PullRequests 合并请求列表。Pull request list.
 	PullRequests []PullRequestResource `json:"pull_requests"`
-	Total        int                   `json:"total"`
+	// Total 记录总数。Total count.
+	Total int `json:"total"`
 }
 
+// Property Issue/PR 上的自定义属性键值对。 Custom property key-value pair on an issue or pull request.
 type Property struct {
-	Key   string `json:"key"`
-	Name  string `json:"name"`
-	Type  string `json:"type"`
+	// Key 属性键。Property key.
+	Key string `json:"key"`
+	// Name 属性名称。Property name.
+	Name string `json:"name"`
+	// Type 属性类型: string/date/number。Property type.
+	Type string `json:"type"`
+	// Value 属性值。Property value.
 	Value string `json:"value"`
 }
 
+// PullRequestResource 任务集资源列表中的合并请求（Pull Request）精简对象。 Condensed pull request object in mission resource list.
 type PullRequestResource struct {
-	Assignees            []MissionMissionResourceDtoWebUserInfo `json:"assignees"`
-	Author               MissionMissionResourceDtoWebUserInfo   `json:"author"`
-	BaseRepoRef          string                                 `json:"base_repo_ref"`
-	BlockedOn            string                                 `json:"blocked_on"`
-	CommentCount         int                                    `json:"comment_count"`
-	CommitCount          int                                    `json:"commit_count"`
-	CreatedAt            string                                 `json:"created_at"`
-	FileCount            int                                    `json:"file_count"`
-	HeadRepoRef          string                                 `json:"head_repo_ref"`
-	Id                   string                                 `json:"id"`
-	IsMerged             bool                                   `json:"is_merged"`
-	IsReadyForMerge      bool                                   `json:"is_ready_for_merge"`
-	Labels               []LabelOptionLite                      `json:"labels"`
-	LastActedAt          string                                 `json:"last_acted_at"`
-	MergeStyle           string                                 `json:"merge_style"`
-	MergeableState       string                                 `json:"mergeable_state"`
-	Number               string                                 `json:"number"`
-	Properties           []Property                             `json:"properties"`
-	RepoSlug             string                                 `json:"repo_slug"`
-	Reviewers            []PullRequestResourceReviewer          `json:"reviewers"`
-	State                string                                 `json:"state"`
-	StatusCheckCommitSha string                                 `json:"status_check_commit_sha"`
-	Title                string                                 `json:"title"`
-	UpdatedAt            string                                 `json:"updated_at"`
+	// Assignees 负责人列表。Assignee list.
+	Assignees []MissionMissionResourceDtoWebUserInfo `json:"assignees"`
+	// Author 作者。Author.
+	Author MissionMissionResourceDtoWebUserInfo `json:"author"`
+	// BaseRepoRef 目标分支。Target branch.
+	BaseRepoRef string `json:"base_repo_ref"`
+	// BlockedOn 阻塞原因。Blocked reason.
+	BlockedOn string `json:"blocked_on"`
+	// CommentCount 评论数。Comment count.
+	CommentCount int `json:"comment_count"`
+	// CommitCount 提交数。Commit count.
+	CommitCount int `json:"commit_count"`
+	// CreatedAt 创建时间。Created at.
+	CreatedAt string `json:"created_at"`
+	// FileCount 变更文件数。Changed file count.
+	FileCount int `json:"file_count"`
+	// HeadRepoRef 源分支。Source branch.
+	HeadRepoRef string `json:"head_repo_ref"`
+	// Id 合并请求 ID。Pull request ID.
+	Id string `json:"id"`
+	// IsMerged 是否已合并。Whether merged.
+	IsMerged bool `json:"is_merged"`
+	// IsReadyForMerge 是否已满足合并条件。Whether ready for merge.
+	IsReadyForMerge bool `json:"is_ready_for_merge"`
+	// Labels 标签列表。Label list.
+	Labels []LabelOptionLite `json:"labels"`
+	// LastActedAt 最近动态时间。Last acted at.
+	LastActedAt string `json:"last_acted_at"`
+	// MergeStyle 合并方式。Merge style.
+	MergeStyle string `json:"merge_style"`
+	// MergeableState 可合并状态。Mergeable state.
+	MergeableState string `json:"mergeable_state"`
+	// Number 合并请求编号。Pull request number.
+	Number string `json:"number"`
+	// Properties 自定义属性列表。Custom property list.
+	Properties []Property `json:"properties"`
+	// RepoSlug 仓库路径。Repository slug.
+	RepoSlug string `json:"repo_slug"`
+	// Reviewers 评审人列表。Reviewer list.
+	Reviewers []PullRequestResourceReviewer `json:"reviewers"`
+	// State 状态: open/closed/merged。State.
+	State string `json:"state"`
+	// StatusCheckCommitSha 状态检查对应的提交 SHA。Commit SHA of the status check.
+	StatusCheckCommitSha string `json:"status_check_commit_sha"`
+	// Title 标题。Title.
+	Title string `json:"title"`
+	// UpdatedAt 更新时间。Updated at.
+	UpdatedAt string `json:"updated_at"`
 }
 
+// PullRequestResourceReviewer 任务集资源列表中内嵌的合并请求评审人信息。 Reviewer of a pull request embedded in mission resource list.
 type PullRequestResourceReviewer struct {
-	Nickname    string `json:"nickname"`
+	// Nickname 评审人昵称。Reviewer nickname.
+	Nickname string `json:"nickname"`
+	// ReviewState 评审状态: approved/... 。Review state.
 	ReviewState string `json:"review_state"`
-	Username    string `json:"username"`
+	// Username 评审人用户名。Reviewer username.
+	Username string `json:"username"`
 }
 
 type TagAnnotation struct {

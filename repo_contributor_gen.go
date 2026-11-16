@@ -7,6 +7,32 @@ import (
 	"net/http"
 )
 
+// GetRepoContributorSimply 查询贡献者缩略信息。Get contributor brief info.
+//
+// 访问令牌权限: repo-code:r
+//
+// CNB API: GET /{slug}/-/contributor/simply
+func (s *RepoContributorService) GetRepoContributorSimply(ctx context.Context, slug string, opts *GetRepoContributorSimplyOptions) (*RepoContribSimply, *Response, error) {
+	u := escapePath("/%s/-/contributor/simply", slug)
+	if opts != nil {
+		var err error
+		u, err = addQuery(u, opts)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+	req, err := s.client.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	var out RepoContribSimply
+	resp, err := s.client.Do(ctx, req, &out)
+	if err != nil {
+		return nil, resp, err
+	}
+	return &out, resp, nil
+}
+
 // GetRepoContributorTrend 查询贡献者趋势数据。Get contributor trend data.
 //
 // 访问令牌权限: repo-code:r
